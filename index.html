@@ -480,6 +480,8 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
     aiDisclosure: { t: 'KDP requires you to tell it when text, images or translations are AI-generated. AI-assisted editing of your own writing does not need to be declared. The answer is private.', s: 'KDP Content Guidelines', u: 'https://kdp.amazon.com/en_US/help/topic/G200672390', d: '2026-11-18' },
     copyright: { t: 'The US Copyright Office (2025) says purely AI-generated material cannot be copyrighted; your own writing and creative changes can be.', s: 'US Copyright Office, Copyright and AI Part 2', u: 'https://www.copyright.gov/ai/', d: '2025-01-29' },
     preorder: { t: 'KDP lets you list an e-book for pre-order up to a year ahead. You can upload a draft and swap in the final file until 72 hours before release.', s: 'KDP Help', u: 'https://kdp.amazon.com/en_US/help/topic/G201499380', d: '2026-11-18' },
+    theo: { t: 'Theo of Golden, a self-published inspirational novel (2023), sold over 170,000 copies mostly by word of mouth and book clubs before Simon & Schuster bought it in 2025. It is reported as the best-selling print book in the US in 2026 so far.', s: 'IngramSpark; Deseret News (citing Deadline)', u: 'https://www.deseret.com/entertainment/2026/08/21/he-self-published-a-novel-late-in-the-game-now-its-the-biggest-book-in-the-us-and-tom-hanks-might-star-in-the-movie/', d: '2026-08-21' },
+    kdpEnforce: { t: 'Author-services sites report that KDP stepped up enforcement in 2026 against undisclosed AI content, sometimes acting on the whole account. Disclosed AI content is allowed. (Not confirmed by Amazon.)', s: 'ScribeCount; Written Word Media', u: 'https://www.writtenwordmedia.com/kdp-account-health/', d: '2026-04-30' },
     bowker: { t: 'About 3.5 million self-published titles got US ISBNs in 2025, before counting e-books with no ISBN.', s: 'Bowker via Publishers Weekly', u: 'https://www.inkfluenceai.com/self-publishing-statistics', d: '2026-01-01' },
     // ---------- any decision ----------
     twoWay: { t: 'Reversible ("two-way door") decisions can be made fast and fixed later; one-way doors deserve slow, careful thought.', s: 'Jeff Bezos, Amazon letter to shareholders (2015)', u: 'https://www.aboutamazon.com/news/company-news/2015-letter-to-shareholders', d: '2016-04-05' },
@@ -1165,6 +1167,7 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
       { t: 'Price and plan', f: [
         { id: 'price', l: 'E-book price on Amazon.com (US $)', type: 'usd', def: 3.99, step: 0.5, src: 'kdpRoyalty', h: '70% royalty from $2.99 to $12.99; 35% outside that band.' },
         { id: 'ku', l: 'Enroll in KDP Select (Kindle+)?', type: 'select', def: 'yes', src: 'kplus', options: YESNO, h: 'Kindle Unlimited became Kindle+ on Oct 22, 2026. 90 days exclusive to Amazon.' },
+        { id: 'print', l: 'Formats at launch', type: 'select', def: 'both', options: [['both', 'E-book and paperback together'], ['later', 'E-book first, paperback later'], ['ebook', 'E-book only']] },
         { id: 'fileMb', l: 'E-book file size (MB)', type: 'num', def: 1, step: 0.5, h: 'Delivery fee is about $0.15 per MB on 70% sales.' },
         { id: 'budget', l: 'Budget for editing, cover and ads', type: 'money', def: 300, step: 50 }
       ] },
@@ -1185,6 +1188,7 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
       if (v.audience >= 1000) out.push(P('for', 'reach', v.audience >= 10000 ? 4 : 3, 'You have people to tell', 'You can reach ' + num(v.audience) + ' people directly. At ' + pct(v.conv, 1) + ' that is about ' + num(Math.round(m.warm)) + ' first readers, the people who leave the first reviews.', null));
       if (v.ku === 'yes') out.push(P('for', 'reach', 2, 'Kindle+ adds discovery', 'In KDP Select the book sits in Kindle+ (formerly Kindle Unlimited), where readers try new authors at no extra cost. A full read earns about ' + usd(m.readVal) + ', and India sales earn 70%.', 'kplus'));
       if (v.timing === 'gift') out.push(P('for', 'timing', 3, 'Good timing', 'Gift season is close' + (v.genre === 'fable' || v.genre === 'selfhelp' ? ', and short uplifting books are bought as gifts.' : '.'), 'preorder'));
+      if (v.genre === 'fable' || v.genre === 'selfhelp') out.push(P('for', 'timing', 3, 'Readers want books like this now', 'A self-published inspirational novel, Theo of Golden, went from word of mouth to the best-selling print book in the US in 2026. Readers are looking for the next one.', 'theo'));
       if (v.timing === 'event') out.push(P('for', 'timing', 3, 'A launch moment is ready', 'An event or partner gives the launch a push you cannot buy later.', null));
       if (m.ready >= 3) out.push(P('for', 'quality', 4, 'The book has been tested', 'It has been revised and proofread, and ' + v.betas + ' readers finished it.', null));
       if (v.goal === 'learn' || v.goal === 'message') out.push(P('for', 'timing', 3, 'Your goal does not need big sales', 'You want to ' + (v.goal === 'learn' ? 'learn the process' : 'share the message') + '. Shipping does that; sales are a bonus.', 'regret'));
@@ -1199,7 +1203,8 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
       if (v.cover === 'ai') out.push(P('against', 'quality', 3, 'An AI-made cover', 'Readers judge by the thumbnail, and an AI image must be declared to KDP. A genre-savvy designer cover costs a few hundred dollars.', 'aiDisclosure'));
       else if (v.cover === 'self') out.push(P('against', 'quality', 2, 'A homemade cover', 'Covers sell books. A designer who knows the genre usually beats a homemade cover.', null));
       if (v.disclose === 'no') out.push(P('against', 'risk', 5, 'Hiding AI content risks your account', 'KDP requires you to declare AI-generated text and images. Getting caught can cost the whole account.', 'aiDisclosure'));
-      if (aiDraft && v.backlist > 0) out.push(P('against', 'risk', 2, 'Your other books share the account', 'Action on one title can reach the whole account, including your ' + v.backlist + ' published ' + plural(v.backlist, 'book', 'books') + '. Disclose truthfully and keep quality high.', 'aiDisclosure'));
+      if (aiDraft && v.backlist > 0) out.push(P('against', 'risk', 2, 'Your other books share the account', 'Enforcement has reportedly reached whole accounts, which includes your ' + v.backlist + ' published ' + plural(v.backlist, 'book', 'books') + '. Disclose truthfully and keep quality high.', 'kdpEnforce'));
+      if (v.print !== 'both' && (v.genre === 'fable' || v.genre === 'selfhelp' || v.genre === 'memoir' || v.genre === 'literary')) out.push(P('against', 'reach', 2, 'Gift and book-club readers buy print', 'Books like this travel as gifts and through book clubs, mostly in print. Theo of Golden spread as paperbacks passed hand to hand. ' + (v.print === 'ebook' ? 'An e-book alone misses them.' : 'Launching print later misses the first wave.'), 'theo'));
       out.push(P('against', 'money', v.goal === 'income' ? 4 : 2, 'Expect modest money at first', 'Base case for year one: about ' + num(m.units[1]) + ' sales or reads, around ' + usd(m.rev[1], 0) + '. 44% of indie authors earn $100 a month or less.', 'authorIncome'));
       if (v.budget > 0) out.push(P('against', 'money', m.breakeven > m.units[1] ? 3 : 1, 'The budget takes time to earn back', 'You need about ' + num(m.breakeven) + ' sales or reads to earn back ' + money(v.budget) + '.', 'kdpRoyalty'));
       if (v.audience < 500) out.push(P('against', 'reach', 3, 'A small launch audience', 'About 3.5 million self-published titles got ISBNs in 2025. Without people to tell, a new book is rarely seen.', 'bowker'));
@@ -1941,7 +1946,7 @@ window.DE_PRESETS = [];</script>
     var c1 = el('div'); c1.append(el('h3', null, 'Hard checks'));
     var ul = el('ul', 'checks');
     r.checks.forEach(function (c) {
-      var li = el('li'); li.append(el('span', 'st ' + c.status, c.status === 'pass' ? 'v' : c.status === 'warn' ? '!' : 'x'));
+      var li = el('li'); li.append(el('span', 'st ' + c.status, c.status === 'pass' ? String.fromCharCode(10003) : c.status === 'warn' ? '!' : String.fromCharCode(10005)));
       var t = el('div'); t.append(el('b', null, c.label), el('small', null, c.note)); li.append(t); ul.append(li);
       li.firstChild.setAttribute('aria-label', c.status === 'pass' ? 'Passed' : c.status === 'warn' ? 'Warning' : 'Failed');
     });
@@ -2190,6 +2195,13 @@ window.DE_PRESETS = [];</script>
     $('startBtn').addEventListener('click', function () { update(true); $('debate').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }); });
     $('resetBtn').addEventListener('click', function () { var s = slot(S.cat); s.values = DE.defaults(DE.BY_ID[S.cat]); s.touched = {}; saveDraft(); renderForm(); update(false); toast('Example values restored'); });
     $('copyBtn').addEventListener('click', copySummary);
+    if (typeof navigator.share === 'function' && CFG.build !== 'artifact') {
+      var sh = el('button', 'secondary', 'Share'); sh.type = 'button';
+      sh.addEventListener('click', function () {
+        navigator.share({ title: 'The Decision Enabler', text: DE.summaryText(S.result) }).catch(function (e) { if (!e || e.name !== 'AbortError') copySummary(); });
+      });
+      $('copyBtn').parentNode.insertBefore(sh, $('copyBtn'));
+    }
     $('saveBtn').addEventListener('click', saveDecision);
     $('savedBtn').addEventListener('click', function () { if ($('savedSheet').hidden) openSheet(); else closeSheet(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSheet(); });
@@ -2207,6 +2219,6 @@ window.DE_PRESETS = [];</script>
 </script>
 
 <script>if('serviceWorker' in navigator && location.protocol==='https:'){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
-<!-- build 2caa1f9030 -->
+<!-- build 4e96662da1 -->
 </body>
 </html>
