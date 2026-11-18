@@ -1,0 +1,2212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Decision Enabler</title>
+<meta name="description" content="Three AI agents help you make a big decision: one argues for, one argues against, and the Enabler weighs both against your own numbers and current research.">
+<meta property="og:title" content="The Decision Enabler">
+<meta property="og:description" content="Three AI agents help you make a big decision: one argues for, one argues against, and the Enabler weighs both against your own numbers and current research.">
+<meta property="og:image" content="icons/icon-512.png">
+<meta name="theme-color" content="#ECEFEE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1315" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-title" content="Decide">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 72px)}body{margin:0}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+</head>
+<body>
+<style>
+/* Layout: a debate hall. The question on top, Agent 1 and Agent 2 facing each other across a
+   balance line, the Enabler's call below. Teal = for, amber = against, indigo = the Enabler. */
+:root {
+  --bg: #ECEFEE;
+  --surface: #FFFFFF;
+  --surface-2: #F5F7F6;
+  --ink: #172026;
+  --muted: #56626B;
+  --line: #D3DAD8;
+  --for: #0B7A6E;
+  --for-soft: #DCF0EC;
+  --against: #A94B0C;
+  --against-soft: #F7E6D9;
+  --enabler: #3B3DA6;
+  --enabler-soft: #E5E5F6;
+  --good: #1D7340;
+  --warn: #8F5E00;
+  --bad: #B3261E;
+  --good-soft: #DFF1E5;
+  --warn-soft: #F8EDCF;
+  --bad-soft: #F9E1DF;
+  --shadow: 0 1px 2px rgba(23, 32, 38, .06), 0 4px 14px rgba(23, 32, 38, .05);
+  --display: "Familjen Grotesk", "Segoe UI", system-ui, sans-serif;
+  --body: "Public Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Consolas, monospace;
+  --radius: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1315; --surface: #161E21; --surface-2: #1B2528; --ink: #E4EBE9; --muted: #9AA8A6; --line: #2A3639;
+    --for: #4CC5B3; --for-soft: #12302C; --against: #F0995C; --against-soft: #3A2414; --enabler: #A3A6FF; --enabler-soft: #23244A;
+    --good: #6FD39A; --warn: #E9B95A; --bad: #FF8A80; --good-soft: #15301F; --warn-soft: #33290F; --bad-soft: #3A1A18;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .35); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1315; --surface: #161E21; --surface-2: #1B2528; --ink: #E4EBE9; --muted: #9AA8A6; --line: #2A3639;
+  --for: #4CC5B3; --for-soft: #12302C; --against: #F0995C; --against-soft: #3A2414; --enabler: #A3A6FF; --enabler-soft: #23244A;
+  --good: #6FD39A; --warn: #E9B95A; --bad: #FF8A80; --good-soft: #15301F; --warn-soft: #33290F; --bad-soft: #3A1A18;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .35); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.55; -webkit-text-size-adjust: 100%; }
+.wrap { max-width: 1140px; margin: 0 auto; padding-block: 0 72px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 40px; }
+h1, h2, h3 { font-family: var(--display); margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+h1 { font-size: clamp(30px, 5vw, 50px); line-height: 1.05; font-weight: 700; }
+h2 { font-size: clamp(22px, 2.6vw, 28px); font-weight: 700; }
+h3 { font-size: 18px; font-weight: 600; line-height: 1.3; }
+p { margin: 0; }
+a { color: var(--enabler); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--enabler); outline-offset: 2px; border-radius: 6px; }
+.mono, .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.eyebrow { font-size: 12.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+/* top bar */
+.topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg); }
+.topbar-in { max-width: 1140px; margin: 0 auto; padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 700; font-size: 18px; margin-right: auto; text-decoration: none; color: var(--ink); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 480px) { .topbar-in { flex-wrap: nowrap; gap: 8px; } .brand { font-size: 15.5px; gap: 8px; } .pillbtn { padding: 6px 11px; } .cursel { padding: 5px 6px; } }
+.brand svg { flex: none; }
+.pillbtn { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 7px 14px; font-size: 14px; font-weight: 600; display: inline-flex; gap: 8px; align-items: center; }
+.pillbtn:hover { border-color: var(--ink); }
+.pillbtn .n { font-family: var(--mono); color: var(--muted); font-weight: 500; }
+.cursel { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 10px; font-size: 14px; font-weight: 600; }
+
+/* hero: two seats and a balance line */
+.hero { display: grid; gap: 22px; padding-top: 34px; }
+.hero .lede { font-size: clamp(17px, 2vw, 19px); color: var(--muted); max-width: 62ch; }
+.stage { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1fr); gap: 14px; align-items: stretch; }
+.seat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; display: grid; gap: 6px; align-content: start; box-shadow: var(--shadow); }
+.seat .who { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 700; font-size: 18px; }
+.seat p { font-size: 14.5px; color: var(--muted); }
+.seat.for { border-top: 4px solid var(--for); }
+.seat.against { border-top: 4px solid var(--against); }
+.badge { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; flex: none; font-family: var(--mono); font-weight: 600; font-size: 15px; }
+.badge.for { background: var(--for-soft); color: var(--for); }
+.badge.against { background: var(--against-soft); color: var(--against); }
+.badge.enabler { background: var(--enabler-soft); color: var(--enabler); }
+.judge { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; display: grid; gap: 12px; box-shadow: var(--shadow); border-top: 4px solid var(--enabler); }
+.judge .who { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 700; font-size: 18px; }
+.judge .call { font-size: 14.5px; color: var(--muted); }
+.judge .call b { color: var(--ink); }
+@media (max-width: 760px) { .stage { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .judge { grid-column: 1 / -1; order: 3; } }
+@media (max-width: 420px) { .stage { grid-template-columns: minmax(0, 1fr); } }
+
+/* the balance meter */
+.meter { display: grid; gap: 6px; }
+.meter .track { position: relative; height: 14px; border-radius: 999px; background: linear-gradient(90deg, var(--for-soft), var(--surface-2) 50%, var(--against-soft)); border: 1px solid var(--line); }
+.meter .mid { position: absolute; left: 50%; top: -5px; bottom: -5px; width: 2px; background: var(--line); transform: translateX(-1px); }
+.meter .knob { position: absolute; top: 50%; width: 22px; height: 22px; border-radius: 50%; background: var(--ink); border: 3px solid var(--surface); box-shadow: 0 1px 4px rgba(0, 0, 0, .25); transform: translate(-50%, -50%); left: 50%; transition: left .6s cubic-bezier(.3, .7, .2, 1); }
+.meter .ends { display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 600; }
+.meter .ends .f { color: var(--for); }
+.meter .ends .a { color: var(--against); }
+.meter .read { text-align: center; font-size: 13.5px; color: var(--muted); }
+.meter .read b { color: var(--ink); }
+
+/* sections */
+.step { display: grid; gap: 18px; scroll-margin-top: 76px; }
+.step-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.step-n { font-family: var(--mono); font-size: 14px; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 1px 8px; background: var(--surface); }
+.step-head .sub { color: var(--muted); font-size: 15px; flex-basis: 100%; }
+
+/* decision picker */
+.picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.tile { text-align: left; background: var(--surface); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-height: 96px; transition: border-color .15s, transform .15s; }
+.tile:hover { border-color: var(--muted); transform: translateY(-1px); }
+.tile[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.tile .t { font-family: var(--display); font-weight: 700; font-size: 17px; display: flex; justify-content: space-between; gap: 8px; }
+.tile .b { font-size: 14px; color: var(--muted); }
+.tile .tick { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--line); flex: none; display: grid; place-items: center; }
+.tile[aria-pressed="true"] .tick { background: var(--ink); border-color: var(--ink); }
+.tile[aria-pressed="true"] .tick::after { content: ""; width: 8px; height: 5px; border-left: 2px solid var(--surface); border-bottom: 2px solid var(--surface); transform: rotate(-45deg) translate(1px, -1px); }
+
+/* facts form */
+.notice { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap; background: var(--enabler-soft); border-radius: 10px; padding: 12px 14px; font-size: 14.5px; }
+.notice p { flex: 1 1 320px; min-width: 0; }
+.presets { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-size: 13.5px; font-weight: 600; }
+.chip:hover { border-color: var(--ink); }
+.groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; align-items: start; }
+fieldset.grp { margin: 0; border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius); padding: 14px 16px 16px; display: grid; gap: 14px; min-width: 0; }
+fieldset.grp legend { font-family: var(--display); font-weight: 700; font-size: 16px; padding: 0 6px; margin-left: -6px; }
+.field { display: grid; gap: 5px; min-width: 0; }
+.field label { font-size: 14px; font-weight: 600; }
+.field .hint { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+.field .hint a { font-weight: 600; text-decoration: none; white-space: nowrap; }
+.field .hint a:hover { text-decoration: underline; }
+.inbox { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); overflow: hidden; }
+.inbox:focus-within { border-color: var(--enabler); box-shadow: 0 0 0 2px var(--enabler-soft); }
+.inbox .aff { display: grid; place-items: center; padding: 0 10px; color: var(--muted); font-size: 14px; font-family: var(--mono); background: var(--surface); }
+.inbox input, .inbox select { flex: 1; min-width: 0; border: 0; background: transparent; padding: 9px 10px; font-size: 16px; outline: none; }
+@media (pointer: coarse) { input, select, textarea { font-size: 16px !important; } }
+.inbox input { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.inbox input.text { font-family: var(--body); }
+.field.changed .inbox { border-color: var(--for); }
+.listrows { display: grid; gap: 6px; }
+.listrow { display: grid; grid-template-columns: minmax(0, 1fr) 64px 34px; gap: 6px; }
+.listrow input, .listrow select { border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); padding: 7px 9px; min-width: 0; }
+.iconbtn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; display: grid; place-items: center; }
+.linkbtn { border: 0; background: none; padding: 0; color: var(--enabler); font-weight: 600; font-size: 14px; text-decoration: underline; justify-self: start; }
+textarea.notes { width: 100%; min-height: 76px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 10px 12px; resize: vertical; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.primary { border: 0; background: var(--ink); color: var(--bg); border-radius: 999px; padding: 12px 22px; font-weight: 700; font-size: 16px; display: inline-flex; gap: 10px; align-items: center; }
+.primary:hover { filter: brightness(1.15); }
+.secondary { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 10px 18px; font-weight: 600; }
+.secondary:hover { border-color: var(--ink); }
+.secondary[disabled], .primary[disabled] { opacity: .5; cursor: not-allowed; }
+
+/* debate */
+.debate { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 900px) { .debate { grid-template-columns: minmax(0, 1fr); } .aside { order: -1; } }
+.qline { font-family: var(--display); font-size: clamp(22px, 3vw, 30px); font-weight: 700; line-height: 1.15; }
+.example-tag { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; background: var(--warn-soft); color: var(--warn); border-radius: 6px; padding: 2px 8px; vertical-align: middle; }
+.rounds { display: grid; gap: 14px; }
+.round { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: grid; gap: 12px; }
+.round-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap; }
+.round-head .lbl { font-weight: 700; font-size: 14px; }
+.round-head .lbl span { font-family: var(--mono); color: var(--muted); font-weight: 500; margin-right: 8px; }
+.won { font-size: 12.5px; font-weight: 700; border-radius: 999px; padding: 2px 10px; white-space: nowrap; }
+.won.for { background: var(--for-soft); color: var(--for); }
+.won.against { background: var(--against-soft); color: var(--against); }
+.won.even { background: var(--surface-2); color: var(--muted); }
+.pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+@media (max-width: 620px) { .pair { grid-template-columns: minmax(0, 1fr); } }
+.say { border-radius: 10px; padding: 11px 13px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.say.for { background: var(--for-soft); border-left: 3px solid var(--for); }
+.say.against { background: var(--against-soft); border-left: 3px solid var(--against); }
+.say.none { background: var(--surface-2); border-left: 3px solid var(--line); color: var(--muted); font-size: 14px; font-style: italic; }
+.say .spk { font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.say.for .spk { color: var(--for); }
+.say.against .spk { color: var(--against); }
+.say .ttl { font-weight: 700; line-height: 1.3; }
+.say .txt { font-size: 14.5px; }
+.say .foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+.dots { display: inline-flex; gap: 3px; align-items: center; }
+.dots i { width: 8px; height: 8px; border-radius: 2px; border: 1.5px solid currentColor; opacity: .45; display: block; }
+.dots i.on { background: currentColor; opacity: 1; }
+.say.for .dots { color: var(--for); }
+.say.against .dots { color: var(--against); }
+.src { color: var(--muted); text-decoration: none; border-bottom: 1px dotted var(--muted); }
+.src:hover { color: var(--ink); }
+.ref { font-size: 13px; color: var(--enabler); display: flex; gap: 8px; align-items: baseline; }
+.ref b { font-family: var(--display); }
+details.more { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
+details.more > summary { cursor: pointer; font-weight: 600; }
+.morecols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin-top: 12px; }
+@media (max-width: 620px) { .morecols { grid-template-columns: minmax(0, 1fr); } }
+.morecols .say { font-size: 14px; }
+
+.aside { display: grid; gap: 14px; position: sticky; top: 76px; }
+@media (max-width: 900px) { .aside { position: static; } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 10px; min-width: 0; }
+.panel h3 { font-size: 15px; }
+.kv { display: grid; gap: 0; }
+.kv .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.kv .row:last-child { border-bottom: 0; }
+.kv .k { font-size: 14px; }
+.kv .k small { display: block; color: var(--muted); font-size: 12px; line-height: 1.35; }
+.kv .v { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 500; text-align: right; white-space: nowrap; }
+.kv .v.good { color: var(--good); }
+.kv .v.warn { color: var(--warn); }
+.kv .v.bad { color: var(--bad); }
+.chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+.chart .axis { stroke: var(--line); stroke-width: 1; }
+.chart .grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 4; }
+.chart .zero { stroke: var(--muted); stroke-width: 1.2; }
+.chart text { fill: var(--muted); font-family: var(--mono); font-size: 11px; }
+.chart .s { fill: none; stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
+.chart .s.for { stroke: var(--for); }
+.chart .s.against { stroke: var(--against); }
+.chart .s.muted { stroke: var(--muted); }
+.chart .s.dash { stroke-dasharray: 5 5; stroke-width: 1.8; }
+.chart .area { stroke: none; }
+.chart .area.for { fill: var(--for); opacity: .08; }
+.chart .area.against { fill: var(--against); opacity: .08; }
+.chart .dot.for { fill: var(--for); }
+.chart .dot.against { fill: var(--against); }
+.chart .dot.muted { fill: var(--muted); }
+.chart .mark { stroke: var(--enabler); stroke-width: 1.2; stroke-dasharray: 3 3; }
+.chart text.marklbl { fill: var(--enabler); font-weight: 500; }
+.chart text.endlbl { font-weight: 500; }
+.chart text.endlbl.for { fill: var(--for); }
+.chart text.endlbl.against { fill: var(--against); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 16px; height: 0; border-top: 2.5px solid; display: block; }
+.legend i.for { border-color: var(--for); }
+.legend i.against { border-color: var(--against); }
+.legend i.muted { border-color: var(--muted); }
+.legend i.dash { border-top-style: dashed; }
+
+/* verdict */
+.ruling { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: clamp(18px, 3vw, 28px); display: grid; gap: 22px; box-shadow: var(--shadow); border-top: 6px solid var(--enabler); }
+.ruling-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 300px); gap: 22px; align-items: start; }
+@media (max-width: 760px) { .ruling-top { grid-template-columns: minmax(0, 1fr); } }
+.stamp { display: inline-block; font-family: var(--display); font-weight: 700; font-size: clamp(30px, 5vw, 46px); line-height: 1; padding: 10px 18px 12px; border: 3px solid currentColor; border-radius: 10px; transform: rotate(-1.5deg); }
+.stamp.go { color: var(--for); }
+.stamp.cond { color: var(--enabler); }
+.stamp.wait { color: var(--warn); }
+.stamp.no { color: var(--bad); }
+.ruling .line { font-size: 17px; font-weight: 600; margin-top: 14px; }
+.ruling .why { color: var(--muted); max-width: 70ch; margin-top: 8px; }
+.conf { display: grid; gap: 6px; }
+.conf .bar { height: 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; }
+.conf .bar i { display: block; height: 100%; background: var(--enabler); border-radius: 999px; }
+.conf small { color: var(--muted); font-size: 12.5px; line-height: 1.4; }
+.cols3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 900px) { .cols3 { grid-template-columns: minmax(0, 1fr); } }
+.cols3 h3 { font-size: 15px; margin-bottom: 8px; }
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.checks li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; font-size: 14px; align-items: start; }
+.checks li b { display: block; }
+.checks li small { color: var(--muted); }
+.st { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 800; margin-top: 1px; font-family: var(--mono); }
+.st.pass { background: var(--good-soft); color: var(--good); }
+.st.warn { background: var(--warn-soft); color: var(--warn); }
+.st.fail { background: var(--bad-soft); color: var(--bad); }
+ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 14.5px; }
+.todo { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.todo label { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 8px; font-size: 14.5px; cursor: pointer; padding: 4px 0; }
+.todo input { width: 17px; height: 17px; margin-top: 3px; accent-color: var(--for); }
+.todo .done span { text-decoration: line-through; color: var(--muted); }
+details.research > summary { cursor: pointer; font-weight: 700; font-family: var(--display); font-size: 16px; }
+.factlist { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 10px; }
+.factlist li { font-size: 14px; display: grid; gap: 2px; padding-left: 12px; border-left: 2px solid var(--line); }
+.factlist li small { color: var(--muted); }
+
+/* live AI */
+.live { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: clamp(16px, 3vw, 24px); display: grid; gap: 16px; }
+.live .status { font-size: 14px; color: var(--muted); }
+.consent { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; font-size: 14px; background: var(--surface-2); border-radius: 10px; padding: 10px 12px; }
+.turns { display: grid; gap: 12px; }
+.turn { border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; border: 1px solid var(--line); min-width: 0; }
+.turn.advocate, .turn.advocate2 { background: var(--for-soft); border-color: transparent; }
+.turn.skeptic, .turn.skeptic2 { background: var(--against-soft); border-color: transparent; }
+.turn.enabler { background: var(--enabler-soft); border-color: transparent; }
+.turn .spk { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; }
+.turn .body { font-size: 14.5px; overflow-wrap: anywhere; }
+.turn .body p + p, .turn .body ul + p, .turn .body p + ul { margin-top: 8px; }
+.turn .body ul { margin: 6px 0 0; padding-left: 18px; }
+.turn .body li + li { margin-top: 4px; }
+.typing { display: inline-flex; gap: 4px; }
+.typing i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .4; animation: blink 1.2s infinite; }
+.typing i:nth-child(2) { animation-delay: .2s; }
+.typing i:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 50% { opacity: 1; } }
+
+/* saved panel + toast */
+.sheet { position: fixed; z-index: 50; top: calc(env(safe-area-inset-top, 0px) + 64px); right: max(16px, env(safe-area-inset-right, 0px)); width: min(420px, calc(100vw - 32px)); max-height: 70vh; overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 12px 40px rgba(0, 0, 0, .18); padding: 14px; display: grid; gap: 10px; }
+.sheet .item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.sheet .item:last-child { border-bottom: 0; }
+.sheet .item small { color: var(--muted); display: block; }
+.toast { position: fixed; z-index: 60; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-size: 14px; max-width: calc(100% - 32px); }
+.copybox { width: 100%; min-height: 160px; font-family: var(--mono); font-size: 12.5px; border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: var(--surface-2); }
+
+footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: grid; gap: 8px; font-size: 13.5px; color: var(--muted); max-width: 80ch; }
+
+/* debate reveal (only after pressing Start) */
+.playing .round { opacity: 0; transform: translateY(8px); }
+.playing .round.in { opacity: 1; transform: none; transition: opacity .45s ease, transform .45s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .meter .knob { transition: none; }
+  .playing .round { opacity: 1; transform: none; }
+  .tile { transition: none; }
+  .typing i { animation: none; opacity: .8; }
+}
+</style>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="#top" aria-label="The Decision Enabler, back to top">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="14" fill="var(--enabler-soft)"/><path d="M6 17h18" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="12" r="3.2" fill="var(--for)"/><circle cx="22" cy="12" r="3.2" fill="var(--against)"/><path d="M15 9v14" stroke="var(--enabler)" stroke-width="2.4" stroke-linecap="round"/></svg>
+      The Decision Enabler
+    </a>
+    <button type="button" class="pillbtn" id="savedBtn" aria-expanded="false" aria-controls="savedSheet" aria-label="My saved decisions">Saved <span class="n" id="savedN">0</span></button>
+    <select id="cur" class="cursel" aria-label="Currency"></select>
+  </div>
+</header>
+
+<div class="wrap" id="top">
+  <section class="hero" aria-labelledby="h1">
+    <div class="eyebrow">Three agents. One clear call.</div>
+    <h1 id="h1">Big decision? Hear both sides first.</h1>
+    <p class="lede">Tell us your real numbers. Agent 1 argues for it, Agent 2 argues against it, and Agent 3, the Enabler, weighs both sides against your facts and current research, then points you to a decision.</p>
+    <div class="stage">
+      <div class="seat for"><div class="who"><span class="badge for">1</span>The Advocate</div><p>Builds the strongest honest case for going ahead, using your numbers.</p></div>
+      <div class="judge">
+        <div class="who"><span class="badge enabler">3</span>The Enabler</div>
+        <div class="meter" id="heroMeter"></div>
+        <p class="call" id="heroCall">Weighs both sides and the hard checks, then makes the call.</p>
+      </div>
+      <div class="seat against"><div class="who"><span class="badge against">2</span>The Skeptic</div><p>Builds the strongest honest case against it, or for waiting.</p></div>
+    </div>
+  </section>
+
+  <section class="step" id="pick" aria-labelledby="h-pick">
+    <div class="step-head"><span class="step-n">1</span><h2 id="h-pick">What are you deciding?</h2></div>
+    <div class="picker" id="picker" role="group" aria-label="Decision type"></div>
+  </section>
+
+  <section class="step" id="facts" aria-labelledby="h-facts">
+    <div class="step-head"><span class="step-n">2</span><h2 id="h-facts">Your facts</h2><p class="sub">The agents only know what you tell them. Every box starts with an example value from November 2026 US data; replace it with yours.</p></div>
+    <div class="notice" id="notice"></div>
+    <form id="form" class="groups" autocomplete="off" novalidate></form>
+    <div class="field">
+      <label for="notes">Anything else the agents should know? <span class="muted" style="font-weight:400">(optional, used by the live AI agents)</span></label>
+      <textarea id="notes" class="notes" placeholder="e.g. We are expecting a baby next year. / I could work remotely two days a week."></textarea>
+    </div>
+    <div class="actions">
+      <button type="button" class="primary" id="startBtn">Start the debate <span aria-hidden="true">&rarr;</span></button>
+      <button type="button" class="secondary" id="resetBtn">Reset to example values</button>
+    </div>
+  </section>
+
+  <section class="step" id="debate" aria-labelledby="h-debate">
+    <div class="step-head"><span class="step-n">3</span><h2 id="h-debate">The debate</h2><p class="sub">Each round is one topic. Agent 1 makes its best point, Agent 2 answers. Strength runs from 1 to 5 squares.</p></div>
+    <div class="debate">
+      <div class="rounds-col" style="display:grid;gap:14px;min-width:0">
+        <p class="qline" id="qline"></p>
+        <div class="rounds" id="rounds"></div>
+        <details class="more" id="more"><summary>More points from both agents</summary><div class="morecols" id="morecols"></div></details>
+      </div>
+      <aside class="aside" aria-label="Balance and numbers">
+        <div class="panel"><h3>Where the debate leans</h3><div class="meter" id="meter"></div></div>
+        <div class="panel"><h3>The numbers</h3><div class="kv" id="nums"></div></div>
+        <div class="panel chart" id="chartPanel"></div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="step" id="call" aria-labelledby="h-call">
+    <div class="step-head"><span class="step-n">4</span><h2 id="h-call">The Enabler's call</h2></div>
+    <div class="ruling" id="ruling" aria-live="polite"></div>
+    <div class="actions">
+      <button type="button" class="secondary" id="copyBtn">Copy the summary</button>
+      <button type="button" class="secondary" id="saveBtn">Save to My decisions</button>
+      <a class="secondary" href="#live" style="text-decoration:none;color:inherit">Get a live AI second opinion</a>
+    </div>
+    <div id="copyFallback" hidden></div>
+  </section>
+
+  <section class="step" id="live" aria-labelledby="h-live">
+    <div class="step-head"><span class="step-n">5</span><h2 id="h-live">Second opinion from live AI agents</h2><p class="sub">Three Claude agents read the same case file and research, debate it in their own words, and give their own call. Use it to test the built-in agents above.</p></div>
+    <div class="live" id="liveBox"></div>
+  </section>
+
+  <footer class="foot">
+    <p><b>Education only.</b> The Decision Enabler is not financial, legal, tax or medical advice. Rules, rates and prices change and differ by place; check with a licensed professional before you act.</p>
+    <p id="factsDate"></p>
+    <p>Privacy: your answers stay on this device. The built-in agents run entirely in your browser. Nothing is sent anywhere unless you press the live AI button and agree.</p>
+  </footer>
+</div>
+
+<div class="sheet" id="savedSheet" hidden role="region" aria-label="My decisions"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>/* Research pack. Every fact the agents quote lives here, with its source and date.
+   Checked 18 Nov 2026. Update this file (and FACTS_CHECKED) when numbers move. */
+(function (root) {
+  'use strict';
+  var FACTS_CHECKED = '2026-11-18';
+  var F = {
+    // ---------- homes ----------
+    rate30: { t: '30-year fixed mortgages averaged 7.11% in the week of Nov 12, 2026, the fourth weekly drop in a row (7.40% in mid-October). A year earlier it was 6.24%.', s: 'Freddie Mac PMMS', u: 'https://www.freddiemac.com/pmms', d: '2026-11-12' },
+    rate15: { t: '15-year fixed mortgages averaged 6.45% in the week of Nov 12, 2026.', s: 'Freddie Mac PMMS', u: 'https://www.freddiemac.com/pmms', d: '2026-11-12' },
+    tenYear: { t: 'The 10-year Treasury yield was about 5.10% on Nov 12, 2026. Mortgage rates track it plus a spread.', s: 'The Mortgage Reports', u: 'https://themortgagereports.com/mortgage-rates-now/mortgage-rates-today-november-6-2026', d: '2026-11-12' },
+    medianHome: { t: 'The US median existing-home price was $416,700 in October 2026, up only 0.4% in a year. Sales fell to a 3.75 million yearly pace, the slowest since 2010.', s: 'National Association of Realtors', u: 'https://www.nar.realtor/newsroom/existing-home-sales-decreased-5-5-percent-october-nar-report', d: '2026-11-12' },
+    inventory: { t: "NAR's chief economist expects rising inventory to put downward pressure on resale prices in most markets.", s: 'National Association of Realtors', u: 'https://www.nar.realtor/newsroom/existing-home-sales-decreased-5-5-percent-october-nar-report', d: '2026-11-12' },
+    closing: { t: 'Purchase closing costs averaged $4,528 (about 1% of the price) before lender fees. With lender fees and points, 2% to 5% of the price is the usual range.', s: 'LodeStar (Apr 2026); The Mortgage Reports', u: 'https://themortgagereports.com/35800/guide-to-mortgage-closing-costs-what-average-mortgage-costs-are-and-how-to-keep-yours-low', d: '2026-04-27' },
+    insurance: { t: 'Homeowners insurance averages about $2,420 to $2,872 a year for $300,000 of dwelling cover. Renewals rose 10.6% on average in the first half of 2026.', s: 'HowMuch; Insurance.com; Matic', u: 'https://matic.com/blog/2026-home-insurance-report/', d: '2026-07-01' },
+    propTax: { t: 'The average US single-family property tax bill was $4,427 in 2025. Rates vary a lot by county.', s: 'ATTOM', u: 'https://www.supermoney.com/home-insurance-vs-property-taxes', d: '2026-03-01' },
+    rent: { t: 'The national median rent was $1,388 in September 2026, down 0.4% from a year earlier.', s: 'Apartment List', u: 'https://www.apartmentlist.com/rental-management/navigating-rental-landscape-oct-2026', d: '2026-10-01' },
+    pmi: { t: 'Private mortgage insurance usually costs about $30 to $70 a month for every $100,000 borrowed when you put down less than 20%. It must end automatically once you owe 78% of the original price.', s: 'Freddie Mac; CFPB', u: 'https://myhome.freddiemac.com/buying/breaking-down-pmi', d: '2026-11-18' },
+    dti: { t: 'Lenders look at debt-to-income. 43% has long been the line for a standard qualified mortgage; many planners aim for housing under 28% and all debts under 36% of gross income.', s: 'CFPB', u: 'https://www.consumerfinance.gov/ask-cfpb/what-is-a-debt-to-income-ratio-en-1791/', d: '2026-11-18' },
+    minDown: { t: 'Conventional loans can start at 3% down. FHA loans need 3.5% down with a credit score of 580 or more, or 10% down at 500 to 579.', s: 'HUD / FHA', u: 'https://www.hud.gov/buying/loans', d: '2026-11-18' },
+    upkeep: { t: 'A common planning rule is to budget 1% to 4% of the home value each year for upkeep and repairs. Older homes sit at the high end.', s: 'Planning rule of thumb', u: '', d: '2026-11-18' },
+    sellCost: { t: 'Selling a home usually costs 6% to 10% of the price once agent fees, transfer taxes and repairs are added up.', s: 'Planning rule of thumb', u: '', d: '2026-11-18' },
+    stdDeduction: { t: 'Most US filers take the standard deduction, so mortgage interest often gives no extra tax saving. Check with a tax professional.', s: 'IRS filing data (Tax Policy Center)', u: 'https://www.taxpolicycenter.org/briefing-book/how-did-tcja-change-standard-deduction-and-itemized-deductions', d: '2026-11-18' },
+    dpa: { t: 'Most US states run down-payment help programs through their housing finance agency, often for first-time buyers.', s: 'HUD', u: 'https://www.hud.gov/topics/buying_a_home', d: '2026-11-18' },
+    inflation: { t: 'US consumer prices rose 3.7% in the year to September 2026 (the latest yearly figure; October had no yearly rate).', s: 'US Bureau of Labor Statistics', u: 'https://www.bls.gov/news.release/cpi.htm', d: '2026-11-13' },
+    // ---------- cars ----------
+    carPrice: { t: 'The average new vehicle sold for $51,109 in October 2026, a record. Incentives averaged 6.8% of the price.', s: 'Kelley Blue Book (Cox Automotive)', u: 'https://www.consumeraffairs.com/news/average-new-car-price-hits-record-51109-as-suvs-and-trucks-drive-costs-higher-111126.html', d: '2026-11-11' },
+    carApr: { t: 'In Q3 2026 the average car loan rate was 7.0% for new and 10.6% for used. The average payment was $787 a month for new and $582 for used, and loans keep getting longer.', s: 'Edmunds', u: 'https://www.edmunds.com/press/new-car-financing-records-pile-up-in-q3-as-buyers-borrow-more-and-stretch-loans-longer-according-to-edmunds.html', d: '2026-10-15' },
+    aaa: { t: 'AAA puts the cost of owning and running a new car at $12,863 a year (5 years, 75,000 miles). Depreciation is the largest part at $4,422 a year.', s: 'AAA Your Driving Costs 2026', u: 'https://mwg.aaa.com/news/press-release/september-15-2026', d: '2026-09-15' },
+    depreciation: { t: 'Five-year-old cars sold for 41.8% less than new on average. EVs lost 57.2%, hybrids 35.4%, trucks 34.2%.', s: 'iSeeCars 2026 study', u: 'https://www.fi-magazine.com/news/car-types-depreciate-differently', d: '2026-03-01' },
+    rule20410: { t: 'A common car-buying guide is 20/4/10: put 20% down, borrow for 4 years or less, and keep total car costs under 10% of gross income.', s: 'Personal finance rule of thumb', u: '', d: '2026-11-18' },
+    // ---------- moving ----------
+    moveCost: { t: 'A cross-country move costs $4,566 on average (6,434 jobs). Full-service movers run $1,400 to $9,700; a rental truck $1,200 to $2,100.', s: 'Angi', u: 'https://www.angi.com/articles/how-much-does-long-distance-move-cost.htm', d: '2026-11-01' },
+    social: { t: 'A review of 148 studies found people with stronger social ties had 50% higher odds of survival over the study periods. Leaving your people behind is a real cost.', s: 'Holt-Lunstad et al., PLOS Medicine (2010)', u: 'https://journals.plos.org/plosmedicine/article?id=10.1371/journal.pmed.1000316', d: '2010-07-27' },
+    schoolMoves: { t: 'Students who change schools often tend to score lower in reading and math and are more likely to drop out, a US GAO review found.', s: 'US GAO-11-40 (2010)', u: 'https://www.gao.gov/products/gao-11-40', d: '2010-11-16' },
+    colIndex: { t: 'Price levels differ a lot between places. Compare cities with an index such as the US BEA Regional Price Parities before you trust a salary bump.', s: 'US Bureau of Economic Analysis', u: 'https://www.bea.gov/data/prices-inflation/regional-price-parities-state-and-metro-area', d: '2026-11-18' },
+    remoteMoves: { t: 'About 9.3% of Americans said they were considering a move because of remote work policies.', s: 'Upwork survey', u: 'https://jobera.com/job-relocation-statistics/', d: '2026-04-08' },
+    // ---------- investing ----------
+    vanguard: { t: "Vanguard's 10-year outlook for US stocks is about 4.8% to 6.8% a year (midpoint 5.8%). Schwab expects 5.9%. Both are well below the long-run history of about 10%.", s: 'Vanguard; Morningstar roundup', u: 'https://www.morningstar.com/markets/experts-forecast-stock-bond-returns-2026-edition', d: '2026-10-01' },
+    cape: { t: 'The S&P 500 Shiller CAPE was about 41 in Sep-Oct 2026, against a long-run average near 17. The record was 44.2 in 1999.', s: 'Shiller data (via multpl / news reports)', u: 'https://www.thetrading.tools/shiller-cape', d: '2026-10-06' },
+    hysa: { t: 'Top high-yield savings accounts paid about 4.0% to 4.4% APY in November 2026. The average savings account pays 0.38%.', s: 'Bankrate; FDIC', u: 'https://www.bankrate.com/banking/savings/best-high-yield-interests-savings-accounts/', d: '2026-11-11' },
+    badYears: { t: 'The S&P 500 lost 37% in 2008 and 18% in 2022 (total return). From the 2007 peak to the 2009 low it fell about 57%.', s: 'S&P Dow Jones Indices', u: 'https://www.spglobal.com/spdji/en/indices/equity/sp-500/', d: '2026-11-18' },
+    singleStocks: { t: 'From 1926 to 2016 just 4% of US stocks created all of the market\'s net wealth gain. Most single stocks did worse than Treasury bills over their lifetimes.', s: 'Bessembinder, Journal of Financial Economics (2018)', u: 'https://doi.org/10.1016/j.jfineco.2018.06.004', d: '2018-09-01' },
+    crypto: { t: 'Bitcoin fell about 77% from its November 2021 peak to its November 2022 low.', s: 'Market price data', u: 'https://coinmarketcap.com/currencies/bitcoin/', d: '2022-11-21' },
+    bonds2022: { t: 'US investment-grade bonds (Bloomberg US Aggregate) lost about 13% in 2022 as rates jumped. Bank CDs and Treasuries held to maturity do not lose value this way.', s: 'Bloomberg index data', u: 'https://www.morningstar.com/markets/experts-forecast-stock-bond-returns-2026-edition', d: '2023-01-03' },
+    gold: { t: 'Gold pays no income or dividends, and its price fell about 28% in 2013.', s: 'LBMA gold price data', u: 'https://www.gold.org/goldhub/data/gold-prices', d: '2014-01-02' },
+    reits: { t: 'US equity REITs lost about 38% in 2008 (FTSE Nareit All Equity REITs index).', s: 'Nareit index data', u: 'https://www.reit.com/data-research/reit-indexes/annual-index-values-returns', d: '2009-01-02' },
+    cardApr: { t: 'Credit cards that charge interest have averaged above 21% APR in recent Federal Reserve data. Paying one off is a guaranteed return at that rate.', s: 'Federal Reserve G.19', u: 'https://www.federalreserve.gov/releases/g19/current/', d: '2026-11-07' },
+    match: { t: 'An employer 401(k) match is often 50% to 100% of what you put in, up to a limit. No market investment reliably beats an instant match.', s: 'Plan design norms', u: '', d: '2026-11-18' },
+    emergency: { t: 'Planners commonly suggest 3 to 6 months of essential expenses in an emergency fund before taking on investment risk.', s: 'CFPB; planning norm', u: 'https://www.consumerfinance.gov/an-essential-guide-to-building-an-emergency-fund/', d: '2026-11-18' },
+    // ---------- books ----------
+    kdpRoyalty: { t: 'KDP pays 70% on e-books priced $2.99 to $12.99 in the US (the ceiling rose from $9.99 on July 7, 2026), minus a delivery fee of about $0.15 per MB. Outside that band it pays 35%.', s: 'KDP Help', u: 'https://kdp.amazon.com/en_US/help/topic/G200634560', d: '2026-07-07' },
+    kdpIndia: { t: 'Sales in India, Japan, Brazil and Mexico earn 70% only when the e-book is enrolled in KDP Select.', s: 'KDP Help', u: 'https://kdp.amazon.com/en_US/help/topic/G200634560', d: '2026-11-18' },
+    kplus: { t: 'On Oct 22, 2026 Amazon renamed Kindle Unlimited to Kindle+ and added audiobooks. Books already in KDP Select stay in automatically.', s: 'Written Word Media; 9to5Mac', u: 'https://www.writtenwordmedia.com/kindle-plus-for-authors/', d: '2026-10-22' },
+    kenp: { t: 'Kindle Unlimited (now Kindle+) pays per page read, about $0.0040 to $0.0049 a page in 2026. Amazon does not publish a fixed rate; it changes monthly.', s: 'KENP trackers (Kindlepreneur, Profitable)', u: 'https://kindlepreneur.com/kenp/', d: '2026-06-01' },
+    authorIncome: { t: "In Written Word Media's 2025 survey, 44% of indie authors earned $100 a month or less; 13% earned over $5,000 a month. The often-quoted '250 copies' average has no traceable source.", s: 'Written Word Media 2025; Inkfluence 2026', u: 'https://www.writtenwordmedia.com/2025-indie-author-survey-results-insights-into-self-publishing-for-authors/', d: '2025-06-01' },
+    aiDisclosure: { t: 'KDP requires you to tell it when text, images or translations are AI-generated. AI-assisted editing of your own writing does not need to be declared. The answer is private.', s: 'KDP Content Guidelines', u: 'https://kdp.amazon.com/en_US/help/topic/G200672390', d: '2026-11-18' },
+    copyright: { t: 'The US Copyright Office (2025) says purely AI-generated material cannot be copyrighted; your own writing and creative changes can be.', s: 'US Copyright Office, Copyright and AI Part 2', u: 'https://www.copyright.gov/ai/', d: '2025-01-29' },
+    preorder: { t: 'KDP lets you list an e-book for pre-order up to a year ahead. You can upload a draft and swap in the final file until 72 hours before release.', s: 'KDP Help', u: 'https://kdp.amazon.com/en_US/help/topic/G201499380', d: '2026-11-18' },
+    bowker: { t: 'About 3.5 million self-published titles got US ISBNs in 2025, before counting e-books with no ISBN.', s: 'Bowker via Publishers Weekly', u: 'https://www.inkfluenceai.com/self-publishing-statistics', d: '2026-01-01' },
+    // ---------- any decision ----------
+    twoWay: { t: 'Reversible ("two-way door") decisions can be made fast and fixed later; one-way doors deserve slow, careful thought.', s: 'Jeff Bezos, Amazon letter to shareholders (2015)', u: 'https://www.aboutamazon.com/news/company-news/2015-letter-to-shareholders', d: '2016-04-05' },
+    regret: { t: 'Over the long run people tend to regret the things they did not do more than the things they did.', s: 'Gilovich & Medvec, Psychological Review (1995)', u: 'https://doi.org/10.1037/0033-295X.102.2.379', d: '1995-04-01' },
+    premortem: { t: 'A pre-mortem (imagine it failed, then list why) surfaces risks that plans usually miss.', s: 'Gary Klein, Harvard Business Review (2007)', u: 'https://hbr.org/2007/09/performing-a-project-premortem', d: '2007-09-01' },
+    tenTenTen: { t: 'The 10-10-10 test: how will you feel about this in 10 minutes, 10 months and 10 years?', s: 'Suzy Welch, 10-10-10 (2009)', u: '', d: '2009-01-01' }
+  };
+  var api = { FACTS: F, FACTS_CHECKED: FACTS_CHECKED };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else { root.DE = root.DE || {}; root.DE.FACTS = F; root.DE.FACTS_CHECKED = FACTS_CHECKED; }
+})(typeof window !== 'undefined' ? window : this);
+</script>
+<script>/* The Decision Enabler - engine.
+   Pure functions: no DOM. Each decision type has fields (the facts we ask for),
+   a model (the math), argue() (Agent 1 = for, Agent 2 = against), checks()
+   (hard checks the Enabler applies), flips() and steps().
+   Keep this file ASCII-only. */
+(function (root) {
+  'use strict';
+  var FACTS = (typeof module !== 'undefined' && module.exports) ? require('./facts.js').FACTS : root.DE.FACTS;
+
+  // ---------------------------------------------------------------- formatting
+  var CURRENCIES = {
+    USD: { sym: '$', name: 'US dollar', loc: 'en-US' },
+    INR: { sym: String.fromCharCode(8377), name: 'Indian rupee', loc: 'en-IN' },
+    GBP: { sym: String.fromCharCode(163), name: 'British pound', loc: 'en-GB' },
+    EUR: { sym: String.fromCharCode(8364), name: 'Euro', loc: 'en-IE' },
+    CAD: { sym: 'C$', name: 'Canadian dollar', loc: 'en-CA' },
+    AUD: { sym: 'A$', name: 'Australian dollar', loc: 'en-AU' }
+  };
+  var cur = 'USD';
+  function setCurrency(c) { if (CURRENCIES[c]) cur = c; }
+  function getCurrency() { return cur; }
+  function group(n, loc) {
+    try { return Math.round(n).toLocaleString(loc, { maximumFractionDigits: 0 }); }
+    catch (e) { return String(Math.round(n)); }
+  }
+  function money(n) {
+    if (!isFinite(n)) return '-';
+    var c = CURRENCIES[cur];
+    return (n < 0 ? '-' : '') + c.sym + group(Math.abs(n), c.loc);
+  }
+  function usd(n, d) { return '$' + Number(n).toFixed(d == null ? 2 : d); }
+  function pct(n, d) { if (!isFinite(n)) return '-'; d = d || 0; return Number(n).toFixed(d).replace(/\.0+$/, '') + '%'; }
+  function num(n) { return group(n, 'en-US'); }
+  function plural(n, one, many) { return n === 1 ? one : many; }
+  function yrs(n) { n = Math.round(n * 10) / 10; return n + ' ' + plural(n, 'year', 'years'); }
+  function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
+
+  // ---------------------------------------------------------------- finance math
+  function pmt(principal, ratePct, years) {
+    var n = Math.round(years * 12), r = ratePct / 1200;
+    if (principal <= 0 || n <= 0) return 0;
+    if (r === 0) return principal / n;
+    return principal * r / (1 - Math.pow(1 + r, -n));
+  }
+  function balanceAfter(principal, ratePct, years, months) {
+    var r = ratePct / 1200, p = pmt(principal, ratePct, years);
+    months = Math.min(months, Math.round(years * 12));
+    if (principal <= 0) return 0;
+    if (r === 0) return Math.max(0, principal - p * months);
+    var g = Math.pow(1 + r, months);
+    return Math.max(0, principal * g - p * (g - 1) / r);
+  }
+  function grow(pv, ratePct, years) { return pv * Math.pow(1 + ratePct / 100, years); }
+  // Solve f(x) = 0 on [lo, hi] when f is monotonic. Returns null if no sign change.
+  function solve(f, lo, hi) {
+    var flo = f(lo), fhi = f(hi);
+    if (!isFinite(flo) || !isFinite(fhi) || (flo > 0) === (fhi > 0)) return null;
+    for (var i = 0; i < 60; i++) {
+      var mid = (lo + hi) / 2, fm = f(mid);
+      if ((fm > 0) === (flo > 0)) { lo = mid; flo = fm; } else { hi = mid; }
+    }
+    return (lo + hi) / 2;
+  }
+
+  // ---------------------------------------------------------------- helpers for points
+  function P(side, topic, w, title, text, fact) {
+    return { side: side, topic: topic, w: clamp(Math.round(w), 1, 5), title: title, text: text, fact: fact || null };
+  }
+  function C(label, status, note, fact) { return { label: label, status: status, note: note, fact: fact || null }; }
+  var YESNO = [['yes', 'Yes'], ['no', 'No']];
+
+  // ================================================================ 1. BUY A HOME
+  var HOME_RATES = { '10': 6.40, '15': 6.45, '20': 6.85, '25': 7.00, '30': 7.11 };
+  function rentVsBuy(v, o) {
+    // Month-by-month: whoever spends less invests the gap. Year-end: buyer sells (net of costs).
+    var horizon = 30, months = horizon * 12;
+    var mr = Math.pow(1 + v.invest / 100, 1 / 12) - 1;
+    var bal = o.loan, buyPort = 0, rentPort = o.down + o.closing;
+    var adv = [0], buyerNW = [0], renterNW = [rentPort], netSale = [0], equity = [o.down];
+    var pmiEnd = null, termM = Math.round(o.yrs * 12);
+    for (var m = 1; m <= months; m++) {
+      var y = Math.floor((m - 1) / 12);
+      var value = o.price * Math.pow(1 + v.growth / 100, y);
+      var pay = 0;
+      if (m <= termM && bal > 0) {
+        var interest = bal * o.rate / 1200;
+        var principal = Math.min(bal, o.pi - interest);
+        bal = Math.max(0, bal - principal);
+        pay = interest + principal;
+      }
+      var pmiNow = (o.loan > 0 && (bal / o.price) > 0.78 && o.loan / o.price > 0.8) ? o.loan * v.pmiPct / 1200 : 0;
+      if (pmiNow === 0 && pmiEnd === null && o.loan / o.price > 0.8) pmiEnd = m;
+      var own = pay + pmiNow + value * v.taxPct / 1200 + (v.insurance / 12) * Math.pow(1.03, y) + v.hoa * Math.pow(1.03, y) + value * v.maintPct / 1200;
+      var rent = v.rent * Math.pow(1 + v.rentGrowth / 100, y);
+      buyPort *= (1 + mr); rentPort *= (1 + mr);
+      if (own > rent) rentPort += own - rent; else buyPort += rent - own;
+      if (m % 12 === 0) {
+        var yr = m / 12, valEnd = o.price * Math.pow(1 + v.growth / 100, yr);
+        var ns = valEnd * (1 - v.sellPct / 100) - bal;
+        netSale[yr] = ns; equity[yr] = valEnd - bal;
+        buyerNW[yr] = ns + buyPort; renterNW[yr] = rentPort; adv[yr] = buyerNW[yr] - renterNW[yr];
+      }
+    }
+    return { adv: adv, buyerNW: buyerNW, renterNW: renterNW, netSale: netSale, equity: equity, pmiEndMonth: pmiEnd };
+  }
+  function homeModel(v) {
+    var price = Math.max(1000, v.price), down = clamp(v.down, 0, price), loan = price - down;
+    var yrsN = +v.years, rate = v.rate;
+    var closing = price * v.closingPct / 100, downPct = down / price * 100;
+    var pi = pmt(loan, rate, yrsN);
+    var pmiM = loan / price > 0.8 ? loan * v.pmiPct / 1200 : 0;
+    var taxM = price * v.taxPct / 1200, insM = v.insurance / 12, maintM = price * v.maintPct / 1200;
+    var housing = pi + pmiM + taxM + insM + v.hoa, allIn = housing + maintM;
+    var income = Math.max(1, v.income);
+    var front = housing / income * 100, back = (housing + v.debts) / income * 100;
+    var cushion = v.savings / Math.max(1, allIn + v.debts);
+    var o = { price: price, down: down, loan: loan, closing: closing, yrs: yrsN, rate: rate, pi: pi };
+    var sim = rentVsBuy(v, o);
+    var stay = clamp(Math.round(v.stay), 1, 30);
+    var be = null;
+    for (var y = 1; y <= 30; y++) { if (sim.adv[y] >= 0) { be = y; break; } }
+    var totalInterest = pi * yrsN * 12 - loan;
+    var pmiYears = pmiM > 0 ? (sim.pmiEndMonth ? Math.ceil(sim.pmiEndMonth / 12) : yrsN) : 0;
+    // what would flip the cost result at the stated stay
+    function advAt(over) { var vv = Object.assign({}, v, over); var oo = Object.assign({}, o); if (over.rate != null) { oo.rate = over.rate; oo.pi = pmt(loan, over.rate, yrsN); } return rentVsBuy(vv, oo).adv[stay]; }
+    var rentNeeded = sim.adv[stay] < 0 ? solve(function (r) { return advAt({ rent: r }); }, v.rent, v.rent * 4) : null;
+    var rateNeeded = sim.adv[stay] < 0 ? solve(function (r) { return advAt({ rate: r }); }, 0.5, rate) : null;
+    var price28 = front > 28 ? solve(function (p) {
+      var l = Math.max(0, p - down), pm = l / p > 0.8 ? l * v.pmiPct / 1200 : 0;
+      return (pmt(l, rate, yrsN) + pm + p * v.taxPct / 1200 + insM + v.hoa) / income * 100 - 28;
+    }, down + 1000, price) : null;
+    return {
+      price: price, down: down, downPct: downPct, loan: loan, closing: closing, cashNeeded: down + closing,
+      pi: pi, pmiM: pmiM, pmiYears: pmiYears, taxM: taxM, insM: insM, maintM: maintM, housing: housing, allIn: allIn,
+      front: front, back: back, cushion: cushion, sim: sim, stay: stay, be: be, advStay: sim.adv[stay],
+      saleStay: sim.netSale[stay], totalInterest: totalInterest, rentNeeded: rentNeeded, rateNeeded: rateNeeded, price28: price28,
+      rentLater: v.rent * Math.pow(1 + v.rentGrowth / 100, stay)
+    };
+  }
+  var HOME = {
+    id: 'home', name: 'Buy a home', blurb: 'Buy now, or keep renting and investing the difference?',
+    question: function (v) { return 'Should I buy a ' + money(v.price) + ' home?'; },
+    topics: { cost: 'Cost over your time frame', afford: 'Monthly budget', cash: 'Cash and safety net', market: 'Rates and the market', life: 'Your plans' },
+    groups: [
+      { t: 'The home', f: [
+        { id: 'price', l: 'Home price', type: 'money', def: 250000, step: 1000, src: 'medianHome', h: 'US median existing home: $416,700 (Oct 2026).' },
+        { id: 'down', l: 'Down payment (cash up front)', type: 'money', def: 10000, step: 500, src: 'minDown', h: '3% is the floor for most conventional loans; 3.5% for FHA.' },
+        { id: 'closingPct', l: 'Closing costs', type: 'pct', def: 3, step: 0.1, src: 'closing', h: 'About 1% before lender fees; 2% to 5% with them.' },
+        { id: 'place', l: 'City or area', type: 'text', def: '', ph: 'e.g. Waukee, Iowa', opt: true, h: 'Optional. The live AI agents use it to look at your local market.' }
+      ] },
+      { t: 'The loan', f: [
+        { id: 'years', l: 'Loan length', type: 'select', def: '30', options: [['10', '10 years'], ['15', '15 years'], ['20', '20 years'], ['25', '25 years'], ['30', '30 years']], h: 'Changing this fills in a typical rate unless you typed your own.' },
+        { id: 'rate', l: 'Interest rate', type: 'pct', def: 7.11, step: 0.01, src: 'rate30', h: 'Freddie Mac, Nov 12 2026: 7.11% (30 yr), 6.45% (15 yr). Other lengths are estimates. Use your lender quote if you have one.' },
+        { id: 'credit', l: 'Credit score', type: 'select', def: '700', options: [['760', '760 or higher'], ['700', '700 to 759'], ['640', '640 to 699'], ['580', '580 to 639'], ['500', 'Below 580']] },
+        { id: 'pmiPct', l: 'Mortgage insurance (PMI) per year', type: 'pct', def: 0.6, step: 0.05, src: 'pmi', h: 'About 0.36% to 0.84% of the loan a year when you put down under 20%.' }
+      ] },
+      { t: 'Your money', f: [
+        { id: 'income', l: 'Household income before tax, per month', type: 'money', def: 7500, step: 100 },
+        { id: 'debts', l: 'Other debt payments per month', type: 'money', def: 400, step: 25, h: 'Car, student loans, card minimums.' },
+        { id: 'savings', l: 'Savings left after you buy', type: 'money', def: 12000, step: 500, src: 'emergency', h: 'What stays in the bank once the down payment and closing costs are paid.' },
+        { id: 'rent', l: 'Rent for a similar home, per month', type: 'money', def: 1800, step: 25, src: 'rent', h: 'US median rent: $1,388 (Sep 2026). Use the rent of a home like this one.' }
+      ] },
+      { t: 'Running costs', f: [
+        { id: 'taxPct', l: 'Property tax per year', type: 'pct', def: 1.0, step: 0.05, src: 'propTax', h: 'As a share of the price. Look up your county rate.' },
+        { id: 'insurance', l: 'Home insurance per year', type: 'money', def: 2400, step: 50, src: 'insurance' },
+        { id: 'hoa', l: 'HOA fee per month', type: 'money', def: 0, step: 10 },
+        { id: 'maintPct', l: 'Upkeep per year', type: 'pct', def: 1.5, step: 0.1, src: 'upkeep', h: '1% to 4% of the home value a year.' }
+      ] },
+      { t: 'Your plans and the outlook', f: [
+        { id: 'stay', l: 'Years you expect to live there', type: 'num', unit: 'years', def: 7, step: 1, min: 1, max: 30 },
+        { id: 'job', l: 'How steady is your income?', type: 'select', def: 'normal', options: [['stable', 'Very steady'], ['normal', 'Normal'], ['shaky', 'Could change soon']] },
+        { id: 'matters', l: 'How much does owning matter to you?', type: 'select', def: 'some', options: [['much', 'A lot'], ['some', 'Somewhat'], ['little', 'Not much']] },
+        { id: 'growth', l: 'Home value growth per year', type: 'pct', def: 2, step: 0.25, src: 'medianHome', h: 'US prices rose 0.4% in the last year; the long-run average is higher. 2% is a middle guess.' },
+        { id: 'rentGrowth', l: 'Rent growth per year', type: 'pct', def: 2, step: 0.25, src: 'rent' },
+        { id: 'invest', l: 'Return on money you invest instead', type: 'pct', def: 5, step: 0.25, src: 'vanguard', h: 'Savings accounts pay about 4.2%; Vanguard expects 4.8% to 6.8% from US stocks.' },
+        { id: 'sellPct', l: 'Cost to sell later', type: 'pct', def: 7, step: 0.5, src: 'sellCost' }
+      ] }
+    ],
+    linked: function (changedId, v, touched) {
+      if (changedId === 'years' && !touched.rate) return { rate: HOME_RATES[v.years] };
+      return null;
+    },
+    model: homeModel,
+    argue: function (v, m) {
+      var out = [];
+      var stay = m.stay;
+      // ---- for
+      if (m.be !== null && m.be <= stay) out.push(P('for', 'cost', m.advStay > m.price * 0.05 ? 5 : 4, 'Buying wins over your time frame', 'If you stay ' + yrs(stay) + ', buying ends about ' + money(m.advStay) + ' ahead of renting and investing the difference. It pulls ahead in year ' + m.be + '.', 'rate30'));
+      else if (m.be !== null) out.push(P('for', 'cost', 2, 'Buying wins if you stay longer', 'On these numbers buying pulls ahead in year ' + m.be + '. If your plans stretch that far, the math turns your way.', 'sellCost'));
+      if (m.saleStay > 0) out.push(P('for', 'cost', 2, 'You build something you own', 'After ' + yrs(stay) + ' you would walk away with about ' + money(m.saleStay) + ' from a sale, after paying off the loan and selling costs.', 'sellCost'));
+      if (m.allIn <= v.rent * 1.1) out.push(P('for', 'afford', 4, 'Owning costs about the same as renting', 'All-in, owning costs ' + money(m.allIn) + ' a month against ' + money(v.rent) + ' rent, and part of each loan payment pays down what you owe.', 'rent'));
+      if (m.front <= 28 && m.back <= 36) out.push(P('for', 'afford', 4, 'The payment fits your income', 'Housing would take ' + pct(m.front, 1) + ' of gross income and all debts ' + pct(m.back, 1) + ', inside the 28% / 36% guide.', 'dti'));
+      else if (m.back <= 43) out.push(P('for', 'afford', 2, 'A lender would likely approve it', 'All debts would be ' + pct(m.back, 1) + ' of income, under the 43% line most lenders use.', 'dti'));
+      out.push(P('for', 'market', 2, 'Your payment is locked; rent is not', 'Principal and interest stay at ' + money(m.pi) + ' a month for ' + v.years + ' years. At ' + pct(v.rentGrowth, 1) + ' a year, rent for this home would be ' + money(m.rentLater) + ' in ' + yrs(stay) + '.', 'rent'));
+      if (v.rate >= 6.5) out.push(P('for', 'market', 2, 'If rates fall, you can refinance', 'Rates have dropped four weeks in a row. A 1-point drop would cut the payment by about ' + money(m.pi - pmt(m.loan, v.rate - 1, +v.years)) + ' a month (refinancing costs 2% to 5% of the loan).', 'rate30'));
+      out.push(P('for', 'market', 2, 'A slow market gives buyers room', 'Sales are at their slowest since 2010 and listings are rising, so sellers are more open to price cuts and to paying part of your closing costs.', 'medianHome'));
+      if (m.downPct >= 20) out.push(P('for', 'cash', 3, 'No mortgage insurance', 'With ' + pct(m.downPct, 1) + ' down you skip PMI and start with real equity.', 'pmi'));
+      if (m.cushion >= 6) out.push(P('for', 'cash', 3, 'A strong safety net', 'After buying you would still have ' + m.cushion.toFixed(1) + ' months of housing and debt payments saved.', 'emergency'));
+      if (v.job === 'stable') out.push(P('for', 'life', 2, 'Your income is steady', 'A steady income is what a 30-year promise needs most.', null));
+      if (v.matters === 'much') out.push(P('for', 'life', 3, 'Owning matters to you', 'Roots, stability and freedom to change the place are real benefits, even though they do not show in the math.', 'regret'));
+      if (stay >= 10) out.push(P('for', 'life', 2, 'You plan to stay a long time', 'Over ' + yrs(stay) + ', the one-time costs of buying and selling are spread thin.', 'sellCost'));
+      // ---- against
+      if (m.be === null || m.be > stay) out.push(P('against', 'cost', 5, 'Renting wins over your time frame', 'If you sell after ' + yrs(stay) + ', you would be about ' + money(-m.advStay) + ' behind someone who rented and invested the difference.' + (m.be ? ' Buying only pulls ahead in year ' + m.be + '.' : ' On these numbers buying never pulls ahead within 30 years.'), 'sellCost'));
+      if (stay <= 4) out.push(P('against', 'cost', 4, 'Short stays are expensive', 'Buying and selling within ' + yrs(stay) + ' costs about ' + money(m.closing + m.price * v.sellPct / 100) + ' in fees alone.', 'closing'));
+      if (m.allIn > v.rent * 1.2) out.push(P('against', 'afford', m.allIn > v.rent * 1.5 ? 4 : 3, 'Owning costs much more each month', 'Owning would cost ' + money(m.allIn) + ' a month all-in (loan, tax, insurance, upkeep' + (m.pmiM ? ', PMI' : '') + '), ' + money(m.allIn - v.rent) + ' more than rent.', 'insurance'));
+      if (m.front > 28 || m.back > 36) out.push(P('against', 'afford', m.back > 43 ? 5 : 4, 'The payment stretches your income', 'Housing would take ' + pct(m.front, 1) + ' of gross income and all debts ' + pct(m.back, 1) + '. Planners aim for 28% and 36%.', 'dti'));
+      out.push(P('against', 'cost', 2, 'Costs beyond the loan payment', 'Tax, insurance and upkeep add ' + money(m.taxM + m.insM + m.maintM) + ' a month on top of the loan. Insurance renewals rose 10.6% on average in 2026.', 'insurance'));
+      if (m.pmiM > 0) out.push(P('against', 'cash', 2, 'You pay mortgage insurance', 'With ' + pct(m.downPct, 1) + ' down you pay about ' + money(m.pmiM) + ' a month in PMI for roughly ' + yrs(m.pmiYears) + '. It protects the lender, not you.', 'pmi'));
+      if (m.downPct < 10) out.push(P('against', 'cash', 3, 'Little room if prices dip', 'With ' + pct(m.downPct, 1) + ' down and ' + pct(v.sellPct) + ' selling costs, even a small price dip in the first years means a sale would not cover the loan.', 'inventory'));
+      if (m.cushion < 3) out.push(P('against', 'cash', m.cushion < 1 ? 5 : 4, 'A thin safety net', 'After buying you would have ' + m.cushion.toFixed(1) + ' months of housing and debt payments saved. A roof, a car repair or a job gap would land on a credit card.', 'emergency'));
+      if (v.rate >= 6.5) out.push(P('against', 'market', 3, 'Borrowing is expensive right now', 'At ' + pct(v.rate, 2) + ' you would pay ' + money(m.totalInterest) + ' in interest over ' + v.years + ' years. A year ago the average rate was 6.24%.', 'rate30'));
+      if (v.growth > 1) out.push(P('against', 'market', 2, 'Prices are barely rising', 'US prices rose 0.4% in the last year and NAR expects more listings to press on prices. This plan assumes ' + pct(v.growth, 1) + ' a year.', 'inventory'));
+      out.push(P('against', 'cost', 1, 'Do not count on a tax break', 'Most filers take the standard deduction, so mortgage interest may not lower your taxes at all.', 'stdDeduction'));
+      if (v.job === 'shaky') out.push(P('against', 'life', 4, 'Your income could change', 'A home is slow and costly to sell. Renting keeps you free to move for work.', null));
+      if (v.credit === '580' || v.credit === '640') out.push(P('against', 'cash', v.credit === '580' ? 3 : 2, 'Your credit score raises the cost', 'Scores under 700 usually pay higher rates and PMI. A few months of credit repair can save more than waiting costs.', 'minDown'));
+      if (v.credit === '500') out.push(P('against', 'cash', 5, 'Your credit score limits your options', 'Below 580, FHA needs 10% down and rates are much higher.', 'minDown'));
+      return out;
+    },
+    checks: function (v, m) {
+      var minDown = v.credit === '500' ? 10 : 3;
+      return [
+        C('Down payment meets the loan minimum', m.downPct >= minDown ? 'pass' : 'fail', pct(m.downPct, 1) + ' down; the minimum is ' + minDown + '%' + (v.credit === '500' ? ' at your credit score.' : ' (conventional) or 3.5% (FHA).'), 'minDown'),
+        C('Debt-to-income', m.back <= 36 ? 'pass' : m.back <= 50 ? 'warn' : 'fail', 'All debts would be ' + pct(m.back, 1) + ' of gross income (aim for 36% or less; 43% is the usual limit).', 'dti'),
+        C('Safety net after closing', m.cushion >= 3 ? 'pass' : m.cushion >= 1 ? 'warn' : 'fail', m.cushion.toFixed(1) + ' months of housing and debt payments saved (aim for 3 to 6).', 'emergency'),
+        C('Time frame beats break-even', (m.be !== null && m.be <= m.stay) ? 'pass' : 'warn', m.be ? 'Break-even in year ' + m.be + '; you plan to stay ' + m.stay + '.' : 'No break-even within 30 years on these numbers.', 'sellCost'),
+        C('Income steady enough', v.job === 'shaky' ? 'warn' : 'pass', v.job === 'shaky' ? 'You said it could change soon.' : 'No warning signs given.', null)
+      ];
+    },
+    flips: function (v, m) {
+      var f = [];
+      if (m.be !== null && m.be > m.stay) f.push('Plan to stay at least ' + yrs(m.be) + '; that is where buying pulls ahead.');
+      if (m.rentNeeded) f.push('If a similar home rented for ' + money(m.rentNeeded) + ' a month or more, buying would win at ' + yrs(m.stay) + '.');
+      if (m.rateNeeded) f.push('At a mortgage rate of about ' + pct(m.rateNeeded, 2) + ', buying would win at ' + yrs(m.stay) + '.');
+      if (m.price28) f.push('A home near ' + money(m.price28) + ' keeps housing at 28% of your income.');
+      if (m.downPct < 20) f.push('Putting down ' + money(m.price * 0.2) + ' (20%) removes PMI of ' + money(m.pmiM) + ' a month.');
+      if (m.cushion < 3) f.push('Keep at least ' + money(3 * (m.allIn + v.debts)) + ' in savings after closing (3 months).');
+      return f;
+    },
+    steps: function (v, m) {
+      var s = ['Get written loan estimates from 3 lenders within the same 2 weeks; credit scoring counts it as one check.',
+        'Ask your state housing finance agency about down-payment help, especially if this is your first home.',
+        'Before you make an offer, get an insurance quote and the county tax bill for that exact home.',
+        'Never skip the home inspection.'];
+      if (m.be === null || m.be > m.stay) s.unshift('Run this again with the real rent of a home just like this one; it is the number that moves the answer most.');
+      return s;
+    },
+    numbers: function (v, m) {
+      return [
+        { l: 'Loan payment (principal + interest)', v: money(m.pi) + '/mo' },
+        { l: 'All-in cost of owning', v: money(m.allIn) + '/mo', n: 'Loan, tax, insurance, upkeep' + (m.pmiM ? ', PMI' : '') + (v.hoa ? ', HOA' : '') },
+        { l: 'Cash needed at closing', v: money(m.cashNeeded), n: money(m.down) + ' down + ' + money(m.closing) + ' closing' },
+        { l: 'Debt-to-income', v: pct(m.back, 1), tone: m.back <= 36 ? 'good' : m.back <= 43 ? 'warn' : 'bad' },
+        { l: 'Break-even vs renting', v: m.be ? 'Year ' + m.be : 'Not in 30 years', tone: (m.be && m.be <= m.stay) ? 'good' : 'bad' },
+        { l: 'After ' + yrs(m.stay), v: (m.advStay >= 0 ? 'Buying ahead ' : 'Renting ahead ') + money(Math.abs(m.advStay)), tone: m.advStay >= 0 ? 'good' : 'bad' },
+        { l: 'Total interest over the loan', v: money(m.totalInterest) }
+      ];
+    },
+    chart: function (v, m) {
+      var end = clamp(Math.max(m.stay + 5, 15), 10, 30), pts = [];
+      for (var y = 1; y <= end; y++) pts.push([y, m.sim.adv[y]]);
+      return { title: 'Buying minus renting, if you sell in year...', note: 'Above zero, buying is ahead. Renting assumes you invest what buying would have cost you.', x: 'Year you sell', series: [{ name: 'Buying vs renting', cls: 'for', pts: pts }], zero: true, mark: m.stay, markLabel: 'your plan', fmt: 'money' };
+    }
+  };
+
+  // ================================================================ 2. BUY A CAR
+  function carValue(kind, price, t) {
+    if (t <= 0) return price;
+    if (kind === 'used') return price * Math.pow(0.91, t);
+    return price * 0.84 * Math.pow(0.91, t - 1);
+  }
+  function carModel(v) {
+    var price = Math.max(500, v.carPrice), down = clamp(v.down, 0, price), loan = price - down;
+    var term = +v.term, n = term * 12, pay = pmt(loan, v.apr, term), interest = pay * n - loan;
+    var K = clamp(Math.round(v.keep), 1, 15);
+    var income = Math.max(1, v.income);
+    var maintNew = v.kind === 'new' ? 700 : 1000;
+    var fuelNewY = v.miles / Math.max(5, v.newMpg) * v.fuel, fuelCurY = v.miles / Math.max(5, v.curMpg) * v.fuel;
+    var buyCum = [0], keepCum = [0], usedCum = [0];
+    var usedPrice = v.kind === 'new' ? carValue('new', price, 3) : null;
+    var usedPay = usedPrice ? pmt(Math.max(0, usedPrice - down), 10.6, term) : 0;
+    var usedInterest = usedPrice ? usedPay * n - Math.max(0, usedPrice - down) : 0;
+    var rep = 0, repairsFactor = 0;
+    for (var t = 1; t <= K; t++) {
+      var interestToT = Math.min(t * 12, n) * pay - (loan - balanceAfter(loan, v.apr, term, t * 12));
+      buyCum[t] = (price - carValue(v.kind, price, t)) + interestToT + (fuelNewY + maintNew + v.insDelta) * t;
+      rep += v.curRepairs * Math.pow(1.1, t - 1); repairsFactor += Math.pow(1.1, t - 1);
+      keepCum[t] = v.curValue * (1 - Math.pow(0.88, t)) + rep + fuelCurY * t;
+      if (usedPrice) {
+        var uiToT = Math.min(t * 12, n) * usedPay - (Math.max(0, usedPrice - down) - balanceAfter(Math.max(0, usedPrice - down), 10.6, term, t * 12));
+        usedCum[t] = (usedPrice - carValue('used', usedPrice, t)) + uiToT + (fuelNewY + 1000 + v.insDelta * 0.8) * t;
+      }
+    }
+    var costNew = buyCum[K], costKeep = keepCum[K];
+    var repairsNeeded = (costNew - v.curValue * (1 - Math.pow(0.88, K)) - fuelCurY * K) / repairsFactor;
+    var payPct = pay / income * 100;
+    var carCostPct = (pay + (fuelNewY + maintNew) / 12) / income * 100;
+    var ef = v.savings / Math.max(1, v.monthlyExp);
+    var under1 = balanceAfter(loan, v.apr, term, 12) - carValue(v.kind, price, 1);
+    var under2 = balanceAfter(loan, v.apr, term, 24) - carValue(v.kind, price, 2);
+    var price10 = payPct > 10 ? solve(function (p) { return pmt(Math.max(0, p - down), v.apr, term) / income * 100 - 10; }, down + 100, price) : null;
+    return { price: price, down: down, downPct: down / price * 100, loan: loan, term: term, pay: pay, interest: interest, K: K,
+      fuelNewY: fuelNewY, fuelCurY: fuelCurY, fuelSave: fuelCurY - fuelNewY, maintNew: maintNew, buyCum: buyCum, keepCum: keepCum, usedCum: usedCum,
+      costNew: costNew, costKeep: costKeep, extra: costNew - costKeep, repairsNeeded: repairsNeeded, payPct: payPct, carCostPct: carCostPct, ef: ef,
+      under1: under1, under2: under2, loss1: price - carValue(v.kind, price, 1), loss5: price - carValue(v.kind, price, 5),
+      usedPrice: usedPrice, usedSaving: usedPrice ? price - usedPrice : 0, usedInterest: usedInterest, price10: price10 };
+  }
+  var CAR = {
+    id: 'car', name: 'Buy a car', blurb: 'Buy now, or keep driving what you have?',
+    question: function (v) { return 'Should I buy a ' + money(v.carPrice) + ' ' + (v.kind === 'used' ? 'used' : 'new') + ' car?'; },
+    topics: { need: 'Do you need it', value: 'Total cost and value', budget: 'Monthly budget', loan: 'The loan', running: 'Running costs' },
+    groups: [
+      { t: 'The car', f: [
+        { id: 'kind', l: 'New or used?', type: 'select', def: 'new', options: [['new', 'New'], ['used', 'Used (about 3 years old)']] },
+        { id: 'carPrice', l: 'Price, out the door', type: 'money', def: 38000, step: 500, src: 'carPrice', h: 'Average new vehicle: $51,109 (Oct 2026); compact cars about $28,030.' },
+        { id: 'down', l: 'Down payment, including trade-in', type: 'money', def: 5000, step: 250 },
+        { id: 'apr', l: 'Loan interest rate (APR)', type: 'pct', def: 7.0, step: 0.1, src: 'carApr', h: 'Average 7.0% new, 10.6% used (Q3 2026). Credit unions often beat dealers.' },
+        { id: 'term', l: 'Loan length', type: 'select', def: '5', options: [['3', '3 years'], ['4', '4 years'], ['5', '5 years'], ['6', '6 years'], ['7', '7 years']] },
+        { id: 'keep', l: 'Years you will keep it', type: 'num', unit: 'years', def: 7, step: 1, min: 1, max: 15 }
+      ] },
+      { t: 'Your money', f: [
+        { id: 'income', l: 'Income before tax, per month', type: 'money', def: 6500, step: 100 },
+        { id: 'monthlyExp', l: 'Essential spending per month', type: 'money', def: 3500, step: 100 },
+        { id: 'savings', l: 'Emergency savings', type: 'money', def: 10000, step: 500, src: 'emergency' }
+      ] },
+      { t: 'The car you drive now', f: [
+        { id: 'have', l: 'Do you have a working car now?', type: 'select', def: 'yes', options: [['yes', 'Yes, it runs'], ['no', 'No car, or it died']] },
+        { id: 'state', l: 'How is it doing?', type: 'select', def: 'issues', options: [['ok', 'Reliable'], ['issues', 'Some issues'], ['unsafe', 'Unreliable or unsafe']] },
+        { id: 'curValue', l: 'What it is worth today', type: 'money', def: 7000, step: 250 },
+        { id: 'curRepairs', l: 'Repairs per year', type: 'money', def: 1500, step: 100 },
+        { id: 'curMpg', l: 'Its fuel economy (mpg)', type: 'num', def: 24, step: 1 }
+      ] },
+      { t: 'Running costs', f: [
+        { id: 'miles', l: 'Miles you drive per year', type: 'num', def: 12000, step: 500 },
+        { id: 'fuel', l: 'Fuel price per gallon', type: 'money2', def: 3.2, step: 0.05 },
+        { id: 'newMpg', l: 'New car fuel economy (mpg)', type: 'num', def: 32, step: 1 },
+        { id: 'insDelta', l: 'Extra insurance per year for the new car', type: 'money', def: 500, step: 50 }
+      ] }
+    ],
+    model: carModel,
+    argue: function (v, m) {
+      var out = [];
+      if (v.have === 'no') out.push(P('for', 'need', 5, 'You need a car to get around', 'Without a car, work and daily life get harder and costlier. The question is which car, not whether.', null));
+      else if (v.state === 'unsafe') out.push(P('for', 'need', 5, 'Your car is unreliable or unsafe', 'Breakdowns cost more than the repair bill: missed work, towing and risk on the road.', null));
+      else if (v.state === 'issues' && v.curRepairs >= 1000) out.push(P('for', 'need', 3, 'Repairs are adding up', 'You spend about ' + money(v.curRepairs) + ' a year on repairs, and older cars cost more each year.', 'aaa'));
+      if (m.fuelSave > 300) out.push(P('for', 'running', 2, 'Lower fuel bills', 'At ' + num(v.miles) + ' miles a year you would save about ' + money(m.fuelSave) + ' a year on fuel.', null));
+      if (m.payPct <= 10) out.push(P('for', 'budget', 3, 'The payment fits your budget', 'The payment would be ' + money(m.pay) + ' a month, ' + pct(m.payPct, 1) + ' of gross income.', 'rule20410'));
+      if (m.ef >= 6) out.push(P('for', 'budget', 2, 'Your savings stay healthy', 'You keep ' + m.ef.toFixed(1) + ' months of essential spending saved.', 'emergency'));
+      if (m.K >= 8) out.push(P('for', 'value', 3, 'You will keep it a long time', 'Most of a car\'s loss in value happens in the first 5 years; over ' + yrs(m.K) + ' the cost is spread thin.', 'depreciation'));
+      if (v.kind === 'used') out.push(P('for', 'value', 3, 'Someone else took the biggest hit', 'New cars lose about 12.5% to 20% in year one. A 3-year-old car skips that drop.', 'depreciation'));
+      if (v.kind === 'new') out.push(P('for', 'value', 1, 'There is room to negotiate', 'Incentives average 6.8% of the price right now, and year-end is a good time to push.', 'carPrice'));
+      if (m.downPct >= 20) out.push(P('for', 'loan', 2, 'A solid down payment', 'With ' + pct(m.downPct) + ' down you are unlikely to owe more than the car is worth.', 'rule20410'));
+      if (m.term <= 4) out.push(P('for', 'loan', 2, 'A short loan', 'A ' + m.term + '-year loan keeps total interest to ' + money(m.interest) + '.', 'carApr'));
+      if (v.have === 'yes' && m.extra < 0) out.push(P('for', 'value', 4, 'Buying is cheaper than keeping', 'Over ' + yrs(m.K) + ' the new car costs about ' + money(m.costNew) + ' against ' + money(m.costKeep) + ' to keep yours running.', 'aaa'));
+      // against
+      if (v.have === 'yes' && m.extra > 0) out.push(P('against', 'value', v.state === 'unsafe' ? 2 : 4, 'Keeping your car is cheaper', 'Over ' + yrs(m.K) + ' this car costs about ' + money(m.costNew) + ' (value loss, interest, fuel, upkeep, insurance) against about ' + money(m.costKeep) + ' to keep driving yours: ' + money(m.extra) + ' more.', 'aaa'));
+      if (v.kind === 'new') out.push(P('against', 'value', 3, 'New cars lose value fast', 'This car would lose about ' + money(m.loss1) + ' in year one and ' + money(m.loss5) + ' in five years.', 'depreciation'));
+      if (v.kind === 'new' && m.usedPrice) out.push(P('against', 'value', 3, 'A 3-year-old one costs much less', 'The same model at about 3 years old would cost around ' + money(m.usedSaving) + ' less.', 'depreciation'));
+      if (v.apr >= 7) out.push(P('against', 'loan', v.apr >= 10 ? 3 : 2, 'The loan is costly', 'At ' + pct(v.apr, 1) + ' you would pay ' + money(m.interest) + ' in interest.', 'carApr'));
+      if (m.term >= 6) out.push(P('against', 'loan', 3, 'A long loan', 'With a ' + m.term + '-year loan you may owe more than the car is worth for years' + (m.under2 > 0 ? ' (about ' + money(m.under2) + ' upside-down after 2 years)' : '') + '.', 'carApr'));
+      else if (m.under1 > 0) out.push(P('against', 'loan', 2, 'You would owe more than it is worth', 'After one year you would owe about ' + money(m.under1) + ' more than the car could sell for.', 'depreciation'));
+      if (m.payPct > 10) out.push(P('against', 'budget', m.payPct > 15 ? 5 : 4, 'The payment is heavy', 'The payment would be ' + pct(m.payPct, 1) + ' of gross income. Keeping all car costs under 10% is the usual guide.', 'rule20410'));
+      if (m.ef < 3) out.push(P('against', 'budget', m.ef < 1 ? 5 : 4, 'A thin emergency fund', 'You have ' + m.ef.toFixed(1) + ' months of essential spending saved. A new payment makes any surprise harder.', 'emergency'));
+      if (m.downPct < 10) out.push(P('against', 'loan', 2, 'A small down payment', 'Under 10% down, the early drop in value can leave you owing more than the car is worth.', 'rule20410'));
+      return out;
+    },
+    checks: function (v, m) {
+      return [
+        C('Payment under 10% of income', m.payPct <= 10 ? 'pass' : m.payPct <= 15 ? 'warn' : 'fail', pct(m.payPct, 1) + ' of gross income.', 'rule20410'),
+        C('Emergency savings', m.ef >= 3 ? 'pass' : m.ef >= 1 ? 'warn' : 'fail', m.ef.toFixed(1) + ' months of essential spending (aim for 3 to 6).', 'emergency'),
+        C('Loan of 5 years or less', m.term <= 5 ? 'pass' : 'warn', m.term + '-year loan.', 'carApr'),
+        C('Not upside-down for long', m.under2 > 0 ? 'warn' : 'pass', m.under2 > 0 ? 'Owes more than it is worth after 2 years.' : 'Loan stays under the car\'s value after 2 years.', 'depreciation')
+      ];
+    },
+    flips: function (v, m) {
+      var f = [];
+      if (m.price10) f.push('A car price near ' + money(m.price10) + ' keeps the payment at 10% of income.');
+      if (m.downPct < 20 || m.term > 4) f.push('Put ' + money(m.price * 0.2) + ' down (20%) and borrow for 4 years or less.');
+      if (v.have === 'yes' && m.extra > 0 && m.repairsNeeded > v.curRepairs) f.push('If repairs on your car reach about ' + money(m.repairsNeeded) + ' a year, buying wins on cost.');
+      if (v.kind === 'new' && m.usedPrice) f.push('Buying the same model at 3 years old (about ' + money(m.usedPrice) + ') saves most of the value loss.');
+      if (m.ef < 3) f.push('Keep at least ' + money(3 * v.monthlyExp) + ' saved after the down payment.');
+      return f;
+    },
+    steps: function (v, m) {
+      var s = ['Get pre-approved by a credit union or bank before you visit a dealer.', 'Negotiate the out-the-door price, never the monthly payment.', 'Get an insurance quote for the exact model first.'];
+      if (v.kind === 'used') s.push('Pay for an independent inspection and a vehicle history report.');
+      if (v.have === 'yes') s.push('Get quotes for your current car from at least two buyers before you trade it in.');
+      return s;
+    },
+    numbers: function (v, m) {
+      var rows = [
+        { l: 'Monthly payment', v: money(m.pay) + '/mo', n: m.term + ' years at ' + pct(v.apr, 1) },
+        { l: 'Payment as share of income', v: pct(m.payPct, 1), tone: m.payPct <= 10 ? 'good' : m.payPct <= 15 ? 'warn' : 'bad' },
+        { l: 'Total interest', v: money(m.interest) },
+        { l: 'Value lost in 5 years', v: money(m.loss5) },
+        { l: 'Cost over ' + yrs(m.K), v: money(m.costNew), n: 'Value loss, interest, fuel, upkeep (' + money(m.maintNew) + '/yr assumed), extra insurance' }
+      ];
+      if (v.have === 'yes') rows.push({ l: 'Keep your car instead', v: money(m.costKeep), n: 'Value loss, repairs (+10%/yr), fuel', tone: m.extra > 0 ? 'bad' : 'good' });
+      return rows;
+    },
+    chart: function (v, m) {
+      var buy = [], other = [], name2 = null, cls2 = 'against';
+      for (var t = 1; t <= m.K; t++) {
+        buy.push([t, m.buyCum[t]]);
+        if (v.have === 'yes') { other.push([t, m.keepCum[t]]); name2 = 'Keep your car'; }
+        else if (m.usedPrice) { other.push([t, m.usedCum[t]]); name2 = 'Buy a 3-year-old one'; }
+      }
+      var series = [{ name: 'Buy this car', cls: 'for', pts: buy }];
+      if (name2) series.push({ name: name2, cls: cls2, pts: other });
+      return { title: 'Total cost of driving, year by year', note: 'Value lost + interest + fuel + upkeep + insurance change.', x: 'Years', series: series, zero: false, fmt: 'money' };
+    }
+  };
+
+  // ================================================================ 3. MOVE TO A NEW CITY
+  function moveModel(v) {
+    var sNow = v.incomeNow - v.costNow, sNew = v.incomeNew - v.costNew, delta = sNew - sNow;
+    var oneTime = v.moveCost + v.exitCost, stay = clamp(Math.round(v.stay), 1, 30);
+    var payback = delta > 0 ? oneTime / delta : null;
+    var total = delta * 12 * stay - oneTime;
+    var colJump = (v.costNew / Math.max(1, v.costNow) - 1) * 100, payJump = (v.incomeNew / Math.max(1, v.incomeNow) - 1) * 100;
+    var runway = v.savings / Math.max(1, v.costNew);
+    var after = v.savings - oneTime, afterMonths = after / Math.max(1, v.costNew);
+    var line = [];
+    for (var y = 0; y <= stay; y++) line.push([y, y === 0 ? -oneTime : delta * 12 * y - oneTime]);
+    return { sNow: sNow, sNew: sNew, delta: delta, oneTime: oneTime, stay: stay, payback: payback, total: total, colJump: colJump, payJump: payJump, runway: runway, after: after, afterMonths: afterMonths, line: line };
+  }
+  var MOVE = {
+    id: 'move', name: 'Move to a new city', blurb: 'Pack up for a new place, or stay where you are?',
+    question: function (v) { return v.to ? 'Should I move to ' + v.to + '?' : 'Should I move to a new city?'; },
+    topics: { money: 'Money each month', work: 'Work and income', people: 'People and family', fit: 'Knowing the place', cash: 'Cost of the move' },
+    groups: [
+      { t: 'The move', f: [
+        { id: 'from', l: 'Where you live now', type: 'text', def: '', ph: 'e.g. Des Moines, Iowa', opt: true },
+        { id: 'to', l: 'Where you might move', type: 'text', def: '', ph: 'e.g. Austin, Texas', opt: true },
+        { id: 'household', l: 'Who is moving?', type: 'select', def: 'single', options: [['single', 'Just me'], ['couple', 'Me and a partner'], ['family', 'Family with children']] },
+        { id: 'reason', l: 'Main reason', type: 'select', def: 'career', options: [['career', 'Career'], ['cost', 'Lower cost of living'], ['family', 'Be near family'], ['life', 'Lifestyle or climate'], ['fresh', 'A fresh start']] },
+        { id: 'know', l: 'How well do you know the place?', type: 'select', def: 'once', options: [['lived', 'I have lived there'], ['many', 'Visited several times'], ['once', 'Visited once'], ['never', 'Never been']] }
+      ] },
+      { t: 'Money here and there', f: [
+        { id: 'incomeNow', l: 'Take-home pay now, per month', type: 'money', def: 5200, step: 100, h: 'For a couple or family, the whole household.' },
+        { id: 'incomeNew', l: 'Take-home pay there, per month', type: 'money', def: 6200, step: 100 },
+        { id: 'costNow', l: 'Living costs now, per month', type: 'money', def: 3900, step: 50, h: 'Housing, food, transport, childcare, everything.' },
+        { id: 'costNew', l: 'Living costs there, per month', type: 'money', def: 4600, step: 50, src: 'colIndex', h: 'Price a real rental there; compare cities with a cost-of-living index.' },
+        { id: 'moveCost', l: 'Cost of the move', type: 'money', def: 4566, step: 100, src: 'moveCost', h: 'Cross-country average: $4,566. Truck $1,200 to $2,100; full service up to $9,700.' },
+        { id: 'exitCost', l: 'Other one-time costs', type: 'money', def: 1500, step: 100, h: 'Breaking a lease, deposits, travel, overlap rent.' },
+        { id: 'savings', l: 'Savings you have', type: 'money', def: 15000, step: 500, src: 'emergency' }
+      ] },
+      { t: 'Work and people', f: [
+        { id: 'job', l: 'Your work there', type: 'select', def: 'offer', options: [['offer', 'Signed job offer'], ['remote', 'My remote job comes with me'], ['search', 'I will look for work there'], ['none', 'No work plan yet']] },
+        { id: 'partner', l: 'Your partner\'s work', type: 'select', def: 'na', options: [['na', 'Not applicable'], ['set', 'Has work there, or remote'], ['search', 'Will need to find work']] },
+        { id: 'people', l: 'Family and friends there', type: 'select', def: 'fewer', options: [['more', 'More than here'], ['same', 'About the same'], ['fewer', 'Fewer; starting over']] },
+        { id: 'school', l: 'Would children change schools?', type: 'select', def: 'no', options: YESNO },
+        { id: 'stay', l: 'Years you expect to stay there', type: 'num', unit: 'years', def: 5, step: 1, min: 1, max: 30 }
+      ] }
+    ],
+    model: moveModel,
+    argue: function (v, m) {
+      var out = [];
+      if (m.delta > 0) out.push(P('for', 'money', m.payback <= 12 ? 4 : 3, 'You keep more each month', 'You would have ' + money(m.delta) + ' more left over each month (' + money(m.sNew) + ' against ' + money(m.sNow) + '). The move pays for itself in about ' + Math.ceil(m.payback) + ' months.', 'colIndex'));
+      if (m.total > 0) out.push(P('for', 'cash', 3, 'It pays off over your stay', 'Over ' + yrs(m.stay) + ' you come out about ' + money(m.total) + ' ahead, after paying for the move.', 'moveCost'));
+      if (m.afterMonths >= 3) out.push(P('for', 'cash', 2, 'You can afford the move', 'After moving you still have ' + money(m.after) + ', about ' + m.afterMonths.toFixed(1) + ' months of costs there.', 'emergency'));
+      if (v.job === 'offer') out.push(P('for', 'work', v.reason === 'career' ? 4 : 3, 'A real job is waiting', 'You have a signed offer. Raises and later jobs build on the salary you move up to.', null));
+      if (v.job === 'remote') out.push(P('for', 'work', 3, 'Your income comes with you', 'Your remote job moves with you, so the main money risk of a move is gone.', 'remoteMoves'));
+      if (v.people === 'more') out.push(P('for', 'people', 4, 'Closer to your people', 'You would have more family and friends nearby. Strong ties are good for health and for practical help.', 'social'));
+      if (v.reason === 'family') out.push(P('for', 'people', 3, 'Family is the reason', 'Time near family is hard to make up later.', 'regret'));
+      if (v.know === 'lived' || v.know === 'many') out.push(P('for', 'fit', 2, 'You know the place', 'You have seen it beyond a short visit, so fewer surprises are waiting.', null));
+      if (v.reason === 'life' || v.reason === 'fresh') out.push(P('for', 'fit', 2, 'It is the life you want', 'Wanting a different life is a valid reason. People tend to regret the moves they never made more than the ones they did.', 'regret'));
+      if (v.household === 'single') out.push(P('for', 'people', 2, 'Few ties to untangle', 'Moving alone is simpler and easier to undo if it does not work out.', 'twoWay'));
+      // against
+      if (m.delta < 0) out.push(P('against', 'money', m.delta < -300 ? 4 : 3, 'Less money left each month', 'You would have ' + money(-m.delta) + ' less left over each month. Costs there are ' + pct(m.colJump) + ' higher while pay is ' + pct(m.payJump) + ' higher.', 'colIndex'));
+      if (m.afterMonths < 3) out.push(P('against', 'cash', m.afterMonths < 1 ? 5 : 4, 'The move drains your savings', 'The move costs about ' + money(m.oneTime) + ', leaving ' + money(m.after) + ' (' + m.afterMonths.toFixed(1) + ' months of costs there).', 'moveCost'));
+      if (v.job === 'search' || v.job === 'none') out.push(P('against', 'work', v.job === 'none' ? 5 : 4, 'No income lined up', 'Without a job there, your savings cover about ' + m.runway.toFixed(1) + ' months of costs.', 'emergency'));
+      if (v.partner === 'search') out.push(P('against', 'work', 3, 'Your partner has to start over', 'One income may carry the household while your partner looks for work.', null));
+      if (v.people === 'fewer') out.push(P('against', 'people', 3, 'You leave your support behind', 'Starting over socially takes years. Strong ties matter for health and for help in a crisis.', 'social'));
+      if (v.school === 'yes' || v.household === 'family') out.push(P('against', 'people', v.school === 'yes' ? 3 : 2, 'Children pay a price too', 'Changing schools is hard on children, especially mid-year.', 'schoolMoves'));
+      if (v.know === 'never' || v.know === 'once') out.push(P('against', 'fit', v.know === 'never' ? 4 : 2, 'You barely know the place', 'A visit is not a normal week. Commute, rent, weather and neighbourhoods look different when you live there.', null));
+      if (m.payback && m.payback > 24) out.push(P('against', 'money', 2, 'Slow payback', 'At ' + money(m.delta) + ' a month, earning back ' + money(m.oneTime) + ' takes ' + Math.ceil(m.payback) + ' months.', 'moveCost'));
+      if (v.reason === 'fresh') out.push(P('against', 'fit', 2, 'Problems can move with you', 'A new city changes the scenery, not always the reasons you wanted to leave. Be clear what you are moving toward.', 'premortem'));
+      return out;
+    },
+    checks: function (v, m) {
+      var inc = v.job === 'offer' || v.job === 'remote' ? 'pass' : (m.runway >= 6 ? 'warn' : (v.job === 'search' && m.runway >= 3 ? 'warn' : 'fail'));
+      return [
+        C('Income secured, or 6 months saved', inc, v.job === 'offer' ? 'Signed offer.' : v.job === 'remote' ? 'Remote job continues.' : m.runway.toFixed(1) + ' months of costs saved, no job yet.', 'emergency'),
+        C('Savings left after the move', m.afterMonths >= 3 ? 'pass' : m.afterMonths >= 1 ? 'warn' : 'fail', money(m.after) + ' left, ' + m.afterMonths.toFixed(1) + ' months of costs there.', 'moveCost'),
+        C('Monthly money adds up', m.sNew < 0 ? 'fail' : m.delta >= 0 ? 'pass' : 'warn', 'Left over each month there: ' + money(m.sNew) + ' (now ' + money(m.sNow) + ').', 'colIndex'),
+        C('You have seen it for real', (v.know === 'lived' || v.know === 'many') ? 'pass' : 'warn', v.know === 'never' ? 'Never visited.' : v.know === 'once' ? 'One visit.' : 'Known well.', null)
+      ];
+    },
+    flips: function (v, m) {
+      var f = [];
+      if (m.delta < 0) f.push('Take-home pay of ' + money(v.incomeNew - m.delta) + ' a month there (or costs of ' + money(v.costNew + m.delta) + ') would break even.');
+      if (v.job === 'search' || v.job === 'none') f.push('A signed job offer before you go.');
+      if (m.afterMonths < 3) f.push('Save ' + money(m.oneTime + 3 * v.costNew - v.savings) + ' more so you land with 3 months of costs.');
+      if (v.know === 'never' || v.know === 'once') f.push('A week there living a normal routine.');
+      return f;
+    },
+    steps: function (v, m) {
+      var s = ['Price a real home in the area you would live in, and use it for "Living costs there".',
+        'Get 3 written quotes from licensed interstate movers; check each USDOT number on the FMCSA site.',
+        'Ask your employer about relocation help; it is often negotiable.'];
+      if (v.know !== 'lived') s.push('Spend a few days there living a normal week: the commute, groceries, the neighbourhood at night.');
+      if (v.household === 'family') s.push('Visit schools and check enrollment dates before you set a moving date.');
+      return s;
+    },
+    numbers: function (v, m) {
+      return [
+        { l: 'Left over each month now', v: money(m.sNow) },
+        { l: 'Left over each month there', v: money(m.sNew), tone: m.sNew >= m.sNow ? 'good' : 'bad' },
+        { l: 'One-time cost of moving', v: money(m.oneTime) },
+        { l: 'Payback', v: m.payback ? Math.ceil(m.payback) + ' months' : 'Never, on money alone', tone: m.payback && m.payback <= 24 ? 'good' : 'bad' },
+        { l: 'Over ' + yrs(m.stay), v: (m.total >= 0 ? '+' : '') + money(m.total), tone: m.total >= 0 ? 'good' : 'bad' },
+        { l: 'Savings after the move', v: money(m.after), n: m.afterMonths.toFixed(1) + ' months of costs there' }
+      ];
+    },
+    chart: function (v, m) {
+      return { title: 'Money gained or lost by moving, over time', note: 'Starts below zero by the cost of the move.', x: 'Years after moving', series: [{ name: 'Moving vs staying', cls: 'for', pts: m.line }], zero: true, fmt: 'money' };
+    }
+  };
+
+  // ================================================================ 4. INVEST MONEY
+  var ASSETS = {
+    index: { l: 'a broad index fund', lo: 3.5, mid: 5.8, hi: 8.5, worst: -37, wf: 'badYears', risky: true },
+    stock: { l: 'one company\'s shares', lo: -4, mid: 4, hi: 12, worst: -60, wf: 'singleStocks', risky: true },
+    crypto: { l: 'crypto', lo: -20, mid: 0, hi: 20, worst: -77, wf: 'crypto', risky: true },
+    bonds: { l: 'bonds, CDs or Treasuries', lo: 3.8, mid: 4.3, hi: 4.9, worst: -13, wf: 'bonds2022', risky: false },
+    reit: { l: 'a real estate fund', lo: 2.5, mid: 5.5, hi: 8.5, worst: -38, wf: 'reits', risky: true },
+    gold: { l: 'gold', lo: -1, mid: 3.5, hi: 7, worst: -28, wf: 'gold', risky: true }
+  };
+  function investModel(v) {
+    var a = ASSETS[v.asset] || ASSETS.index, h = clamp(Math.round(v.horizon), 1, 40);
+    var lo = [], mid = [], hi = [], cash = [];
+    for (var y = 0; y <= h; y++) { lo.push([y, grow(v.amount, a.lo, y)]); mid.push([y, grow(v.amount, a.mid, y)]); hi.push([y, grow(v.amount, a.hi, y)]); cash.push([y, grow(v.amount, 4.2, y)]); }
+    var ef = v.efMonths;
+    var debtCost = v.debtBal * v.debtApr / 100;
+    return { a: a, h: h, lo: lo, mid: mid, hi: hi, cash: cash, vLo: lo[h][1], vMid: mid[h][1], vHi: hi[h][1], vCash: cash[h][1], worstLoss: v.amount * a.worst / 100, ef: ef, debtCost: debtCost, realMid: a.mid - 3.7 };
+  }
+  var INVEST = {
+    id: 'invest', name: 'Invest money', blurb: 'Put a lump sum into shares, funds or crypto?',
+    question: function (v) { return 'Should I invest ' + money(v.amount) + ' in ' + (ASSETS[v.asset] || ASSETS.index).l + '?'; },
+    topics: { safety: 'Your foundation', time: 'Time frame', return: 'Expected return', risk: 'Risk', you: 'You and a crash' },
+    groups: [
+      { t: 'The investment', f: [
+        { id: 'amount', l: 'Amount', type: 'money', def: 10000, step: 500 },
+        { id: 'asset', l: 'What you would buy', type: 'select', def: 'index', options: [['index', 'Broad index fund (S&P 500 or total market)'], ['stock', 'Shares of one company'], ['crypto', 'Crypto'], ['bonds', 'Bonds, CDs or Treasuries'], ['reit', 'Real estate fund (REIT)'], ['gold', 'Gold']] },
+        { id: 'horizon', l: 'Years until you need the money', type: 'num', unit: 'years', def: 10, step: 1, min: 1, max: 40 },
+        { id: 'goal', l: 'What it is for', type: 'select', def: 'wealth', options: [['retire', 'Retirement'], ['wealth', 'Grow wealth'], ['house', 'A home in a few years'], ['short', 'Something within 3 years']] }
+      ] },
+      { t: 'Your safety net', f: [
+        { id: 'monthlyExp', l: 'Essential spending per month', type: 'money', def: 3500, step: 100 },
+        { id: 'efMonths', l: 'Emergency fund, in months of spending', type: 'num', unit: 'months', def: 4, step: 0.5, src: 'emergency', h: 'Not counting the money you want to invest.' },
+        { id: 'debtBal', l: 'High-interest debt (cards, personal loans)', type: 'money', def: 0, step: 100 },
+        { id: 'debtApr', l: 'Interest rate on that debt', type: 'pct', def: 22, step: 0.5, src: 'cardApr' },
+        { id: 'match', l: 'Do you get your full employer retirement match?', type: 'select', def: 'full', options: [['full', 'Yes, the full match'], ['partial', 'No, I leave match money on the table'], ['none', 'No match offered']], src: 'match' }
+      ] },
+      { t: 'You and risk', f: [
+        { id: 'drop', l: 'If it fell 30% in a year, you would...', type: 'select', def: 'hold', options: [['sell', 'Sell to stop the losses'], ['hold', 'Wait it out'], ['buy', 'Buy more']] },
+        { id: 'share', l: 'Share of all your savings this amount is', type: 'pct', def: 25, step: 5 },
+        { id: 'know', l: 'How well do you understand it?', type: 'select', def: 'some', options: [['well', 'Well'], ['some', 'Somewhat'], ['no', 'Not really']] }
+      ] }
+    ],
+    model: investModel,
+    argue: function (v, m) {
+      var out = [], a = m.a, risky = a.risky;
+      if (risky && m.h >= 7) out.push(P('for', 'time', v.asset === 'index' ? 4 : 2, 'Time is on your side', 'Over ' + yrs(m.h) + ' there is room to recover from bad years. At ' + pct(a.mid, 1) + ' a year, ' + money(v.amount) + ' grows to about ' + money(m.vMid) + '.', 'vanguard'));
+      else if (risky && m.h >= 5) out.push(P('for', 'time', 2, 'A medium time frame', yrs(m.h) + ' is enough for most recoveries, though not all of them.', 'badYears'));
+      if (!risky && (v.goal === 'short' || v.goal === 'house' || m.h < 5)) out.push(P('for', 'time', 4, 'The right tool for a near goal', 'For money you need within ' + yrs(m.h) + ', CDs and Treasuries keep the amount steady while paying today\'s high yields.', 'tenYear'));
+      if (risky) out.push(P('for', 'return', 3, 'Cash barely keeps up', 'Savings accounts pay about 4.2% while prices rose 3.7% last year, so cash grows little in real terms.', 'hysa'));
+      else out.push(P('for', 'return', 3, 'You lock in high yields', 'The 10-year Treasury pays about 5.1%, among the best yields in nearly two decades.', 'tenYear'));
+      if (v.debtBal <= 0 && m.ef >= 3) out.push(P('for', 'safety', 3, 'Your foundation is solid', 'No high-interest debt and ' + m.ef + ' months of spending saved: that is the right order.', 'emergency'));
+      if (v.match === 'full') out.push(P('for', 'safety', 1, 'You already take the free match', 'Your employer match is already working for you.', 'match'));
+      if (risky && (v.drop === 'hold' || v.drop === 'buy')) out.push(P('for', 'you', 3, 'You can sit through a drop', 'You would ' + (v.drop === 'buy' ? 'buy more' : 'wait it out') + ' after a 30% fall. Staying invested is what turns ups and downs into returns.', 'badYears'));
+      if (v.know === 'well') out.push(P('for', 'you', 2, 'You understand what you are buying', 'Knowing how it makes money helps you hold on when it is down.', null));
+      if (v.asset === 'index') out.push(P('for', 'risk', 2, 'Spread across hundreds of companies', 'A broad fund owns the few big winners automatically.', 'singleStocks'));
+      if ((v.asset === 'stock' || v.asset === 'crypto' || v.asset === 'gold') && v.share <= 10) out.push(P('for', 'risk', 2, 'A small bet', 'At ' + pct(v.share) + ' of your savings, even a bad outcome will not sink you.', null));
+      // against
+      if (v.debtBal > 0 && v.debtApr > 8) out.push(P('against', 'safety', v.debtBal >= v.amount * 0.25 ? 5 : 4, 'Pay off the ' + pct(v.debtApr, 1) + ' debt first', 'Paying off ' + money(v.debtBal) + ' at ' + pct(v.debtApr, 1) + ' is a sure ' + pct(v.debtApr, 1) + ' return (' + money(m.debtCost) + ' a year saved). No investment here reliably beats that.', 'cardApr'));
+      if (m.ef < 3) out.push(P('against', 'safety', m.ef < 1 ? 5 : 4, 'No real safety net', 'With ' + m.ef + ' months saved, a surprise bill could force you to sell at a bad time.', 'emergency'));
+      if (v.match === 'partial') out.push(P('against', 'safety', 4, 'You are skipping free match money', 'Put enough into your workplace plan to get the full match before anything else.', 'match'));
+      if (risky && m.h < 5) out.push(P('against', 'time', m.h < 3 ? 5 : 4, 'Too short a time for this', 'Stocks fell 37% in 2008 and 18% in 2022. In ' + yrs(m.h) + ' there may be no time to recover. A bad year here would cost about ' + money(-m.worstLoss) + '.', a.wf));
+      if (risky && (v.goal === 'short' || v.goal === 'house') && m.h >= 5) out.push(P('against', 'time', 3, 'Money for a set goal needs to be there', 'If this money must be there for a home, a bad year at the wrong time could push the goal back.', 'badYears'));
+      if (v.asset === 'index' || v.asset === 'stock') out.push(P('against', 'return', 2, 'Prices are high right now', 'The market\'s CAPE is about 41, more than double its long-run 17. Forecasters expect lower returns over the next decade.', 'cape'));
+      if (risky && v.drop === 'sell') out.push(P('against', 'you', 4, 'You would sell in a crash', 'Selling after a 30% drop locks in the loss. Pick a calmer mix you can hold.', 'badYears'));
+      if (v.asset === 'stock') out.push(P('against', 'risk', v.share > 10 ? 4 : 3, 'One company is a big bet', 'Most single stocks do worse than Treasury bills over their lifetimes; a few big winners carry the market.', 'singleStocks'));
+      if (v.asset === 'crypto') out.push(P('against', 'risk', v.share > 10 ? 5 : 3, 'Crypto can lose most of its value', 'Bitcoin fell about 77% from late 2021 to late 2022, and there are no earnings to anchor the price.', 'crypto'));
+      if (v.asset === 'gold') out.push(P('against', 'return', 2, 'Gold pays nothing', 'Gold earns no income and fell 28% in 2013.', 'gold'));
+      if (v.asset === 'reit') out.push(P('against', 'risk', 2, 'Real estate funds swing too', 'REITs lost about 38% in 2008 and move with interest rates.', 'reits'));
+      if (!risky && m.h >= 10 && (v.goal === 'retire' || v.goal === 'wealth')) out.push(P('against', 'return', 2, 'May lag stocks over the long run', 'Over ' + yrs(m.h) + ', bonds and CDs usually grow less than a stock fund.', 'vanguard'));
+      if (v.know === 'no') out.push(P('against', 'you', 3, 'You do not fully understand it', 'If you cannot explain how it makes money, you are unlikely to hold it through a fall.', null));
+      if (risky && v.asset !== 'index' && v.share > 50) out.push(P('against', 'risk', 3, 'Too much in one place', pct(v.share) + ' of your savings in one bet is a lot to lose.', null));
+      return out;
+    },
+    checks: function (v, m) {
+      var risky = m.a.risky;
+      return [
+        C('No high-interest debt', v.debtBal <= 0 || v.debtApr <= 8 ? 'pass' : (v.debtBal < 1000 ? 'warn' : 'fail'), v.debtBal > 0 ? money(v.debtBal) + ' at ' + pct(v.debtApr, 1) + '.' : 'None.', 'cardApr'),
+        C('Emergency fund', m.ef >= 3 ? 'pass' : m.ef >= 1 ? 'warn' : 'fail', m.ef + ' months of spending (aim for 3 to 6).', 'emergency'),
+        C('Time frame fits the investment', !risky ? 'pass' : m.h >= 5 ? 'pass' : m.h >= 3 ? 'warn' : 'fail', yrs(m.h) + ' for ' + m.a.l + '.', 'badYears'),
+        C('Free employer match taken', v.match === 'partial' ? 'warn' : 'pass', v.match === 'partial' ? 'Match money left unclaimed.' : 'OK.', 'match'),
+        C('Not too concentrated', (v.asset === 'stock' || v.asset === 'crypto') ? (v.share > 50 ? 'fail' : v.share > 20 ? 'warn' : 'pass') : 'pass', pct(v.share) + ' of savings.', 'singleStocks')
+      ];
+    },
+    flips: function (v, m) {
+      var f = [];
+      if (v.debtBal > 0 && v.debtApr > 8) f.push('Pay off the ' + money(v.debtBal) + ' debt first, then invest.');
+      if (m.ef < 3) f.push('Build ' + money(3 * v.monthlyExp) + ' of emergency savings first.');
+      if (v.match === 'partial') f.push('Get the full employer match first.');
+      if (m.a.risky && m.h < 5) f.push('Use CDs or Treasuries for money you need within 5 years.');
+      if (v.asset !== 'index' && m.a.risky) f.push('A broad index fund would remove the single-bet risk.');
+      return f;
+    },
+    steps: function (v, m) {
+      return ['Use a low-cost broad fund (yearly fee under 0.10%) inside a tax-advantaged account if you can.',
+        'If a lump sum makes you nervous, invest it in equal parts over a few months.',
+        'Write down today what you will do if it drops 30%, and keep the note.',
+        'Check fees and that the platform is regulated (SIPC in the US, SEBI-registered in India).'];
+    },
+    numbers: function (v, m) {
+      return [
+        { l: 'In ' + yrs(m.h) + ', middle case', v: money(m.vMid), n: pct(m.a.mid, 1) + ' a year' },
+        { l: 'Low case', v: money(m.vLo), n: pct(m.a.lo, 1) + ' a year' },
+        { l: 'High case', v: money(m.vHi), n: pct(m.a.hi, 1) + ' a year' },
+        { l: 'Savings account instead', v: money(m.vCash), n: '4.2% a year, if rates held' },
+        { l: 'A bad year like the worst on record', v: money(m.worstLoss), tone: 'bad', n: pct(m.a.worst) + ' in one year' },
+        { l: 'Real return, middle case', v: pct(m.realMid, 1) + ' a year', n: 'After 3.7% inflation' }
+      ];
+    },
+    chart: function (v, m) {
+      return { title: 'What ' + money(v.amount) + ' could grow to', note: 'Three paths from forecast ranges. Real markets zig-zag; these are smooth averages.', x: 'Years', series: [
+        { name: 'High', cls: 'for', pts: m.hi, dash: true }, { name: 'Middle', cls: 'for', pts: m.mid }, { name: 'Low', cls: 'against', pts: m.lo, dash: true }, { name: 'Savings account', cls: 'muted', pts: m.cash }
+      ], zero: false, fmt: 'money' };
+    }
+  };
+
+  // ================================================================ 5. PUBLISH A BOOK
+  var GENRE_PULL = { romance: 1.6, thriller: 1.5, fantasy: 1.4, fable: 1, selfhelp: 1, business: 0.9, literary: 0.6, memoir: 0.6, other: 0.8 };
+  function bookModel(v) {
+    var price = v.price, inBand = price >= 2.99 && price <= 12.99;
+    var royalty = inBand ? 0.7 * Math.max(0, price - 0.15 * v.fileMb) : 0.35 * price;
+    var pages = Math.round(v.words / 187), readVal = pages * 0.0045;
+    var warm = v.audience * v.conv / 100, pull = GENRE_PULL[v.genre] || 0.8;
+    var units = [warm * 0.5 + 15 * pull, warm + 50 * pull, warm * 2 + 200 * pull].map(Math.round);
+    var perUnit = v.ku === 'yes' ? 0.6 * royalty + 0.4 * readVal * 0.8 : royalty;
+    var rev = units.map(function (u) { return u * perUnit; });
+    var breakeven = v.budget > 0 ? Math.ceil(v.budget / Math.max(0.01, perUnit)) : 0;
+    var ready = 0;
+    if (v.revised === 'yes' || v.aiShare === 'none' || v.aiShare === 'assist') ready++;
+    if (v.copyedit !== 'none') ready++;
+    if (v.betas >= 3) ready++;
+    if (v.cover === 'pro') ready++;
+    return { inBand: inBand, royalty: royalty, pages: pages, readVal: readVal, warm: warm, units: units, perUnit: perUnit, rev: rev, breakeven: breakeven, ready: ready };
+  }
+  var BOOK = {
+    id: 'book', name: 'Publish a book', blurb: 'Publish on Amazon KDP now, or wait and polish?',
+    question: function (v) { return 'Should I publish ' + (v.title ? '"' + v.title + '"' : 'my book') + ' on KDP now?'; },
+    topics: { quality: 'Is the book ready', risk: 'Rules and account risk', reach: 'Readers and reach', money: 'Money', timing: 'Timing and goals' },
+    usdOnly: true,
+    groups: [
+      { t: 'The book', f: [
+        { id: 'title', l: 'Title', type: 'text', def: '', ph: 'e.g. My First Novel', opt: true },
+        { id: 'genre', l: 'Genre', type: 'select', def: 'fable', options: [['fable', 'Inspirational fable or wisdom story'], ['thriller', 'Thriller or mystery'], ['romance', 'Romance or romantasy'], ['fantasy', 'Fantasy or sci-fi'], ['literary', 'Literary fiction'], ['selfhelp', 'Self-help'], ['business', 'Business or tech'], ['memoir', 'Memoir'], ['other', 'Other']] },
+        { id: 'words', l: 'Word count', type: 'num', def: 50000, step: 1000 },
+        { id: 'aiShare', l: 'How was it written?', type: 'select', def: 'assist', src: 'aiDisclosure', options: [['none', 'I wrote it myself'], ['assist', 'I wrote it; AI helped me edit'], ['heavy', 'AI drafted it; I rewrote most of it'], ['light', 'AI drafted it; light edits so far']] }
+      ] },
+      { t: 'Is it ready?', f: [
+        { id: 'revised', l: 'Have you done your own full revision pass?', type: 'select', def: 'yes', options: YESNO },
+        { id: 'copyedit', l: 'Proofreading', type: 'select', def: 'self', options: [['pro', 'Professional copy-edit'], ['self', 'Careful proofread by me or a friend'], ['none', 'Not yet']] },
+        { id: 'betas', l: 'Readers who finished it and gave feedback', type: 'num', def: 3, step: 1, min: 0 },
+        { id: 'cover', l: 'Cover', type: 'select', def: 'self', options: [['pro', 'Professional designer'], ['self', 'Made it myself'], ['ai', 'AI-made']] },
+        { id: 'disclose', l: 'Will you answer KDP\'s AI questions truthfully?', type: 'select', def: 'yes', src: 'aiDisclosure', options: YESNO }
+      ] },
+      { t: 'Price and plan', f: [
+        { id: 'price', l: 'E-book price on Amazon.com (US $)', type: 'usd', def: 3.99, step: 0.5, src: 'kdpRoyalty', h: '70% royalty from $2.99 to $12.99; 35% outside that band.' },
+        { id: 'ku', l: 'Enroll in KDP Select (Kindle+)?', type: 'select', def: 'yes', src: 'kplus', options: YESNO, h: 'Kindle Unlimited became Kindle+ on Oct 22, 2026. 90 days exclusive to Amazon.' },
+        { id: 'fileMb', l: 'E-book file size (MB)', type: 'num', def: 1, step: 0.5, h: 'Delivery fee is about $0.15 per MB on 70% sales.' },
+        { id: 'budget', l: 'Budget for editing, cover and ads', type: 'money', def: 300, step: 50 }
+      ] },
+      { t: 'Your reach and goals', f: [
+        { id: 'audience', l: 'People you can reach directly', type: 'num', def: 2000, step: 100, h: 'Followers, subscribers and email list combined.' },
+        { id: 'conv', l: 'Share of them you expect to buy or read it', type: 'pct', def: 1, step: 0.25, h: 'A planning guess. 0.5% to 2% is a common range for a warm audience.' },
+        { id: 'hours', l: 'Hours a week for marketing', type: 'num', def: 3, step: 1, min: 0 },
+        { id: 'timing', l: 'Timing', type: 'select', def: 'none', options: [['gift', 'Gift season is coming'], ['event', 'I have a launch event or partner'], ['none', 'No special timing']] },
+        { id: 'backlist', l: 'Your books already published', type: 'num', def: 0, step: 1, min: 0 },
+        { id: 'goal', l: 'Main goal', type: 'select', def: 'message', options: [['income', 'Income'], ['cred', 'Credibility'], ['message', 'Share the message'], ['learn', 'Learn the process']] }
+      ] }
+    ],
+    model: bookModel,
+    argue: function (v, m) {
+      var out = [], aiDraft = v.aiShare === 'heavy' || v.aiShare === 'light';
+      out.push(P('for', 'money', 2, 'Publishing costs nothing up front', 'KDP charges nothing to publish. ' + (v.budget > 0 ? 'Your ' + money(v.budget) + ' budget is a choice, not a requirement.' : 'You can launch with no spend at all.'), 'kdpRoyalty'));
+      if (m.inBand) out.push(P('for', 'money', 2, 'You keep 70% of each sale', 'At ' + usd(v.price) + ' you earn about ' + usd(m.royalty) + ' per sale.', 'kdpRoyalty'));
+      if (v.audience >= 1000) out.push(P('for', 'reach', v.audience >= 10000 ? 4 : 3, 'You have people to tell', 'You can reach ' + num(v.audience) + ' people directly. At ' + pct(v.conv, 1) + ' that is about ' + num(Math.round(m.warm)) + ' first readers, the people who leave the first reviews.', null));
+      if (v.ku === 'yes') out.push(P('for', 'reach', 2, 'Kindle+ adds discovery', 'In KDP Select the book sits in Kindle+ (formerly Kindle Unlimited), where readers try new authors at no extra cost. A full read earns about ' + usd(m.readVal) + ', and India sales earn 70%.', 'kplus'));
+      if (v.timing === 'gift') out.push(P('for', 'timing', 3, 'Good timing', 'Gift season is close' + (v.genre === 'fable' || v.genre === 'selfhelp' ? ', and short uplifting books are bought as gifts.' : '.'), 'preorder'));
+      if (v.timing === 'event') out.push(P('for', 'timing', 3, 'A launch moment is ready', 'An event or partner gives the launch a push you cannot buy later.', null));
+      if (m.ready >= 3) out.push(P('for', 'quality', 4, 'The book has been tested', 'It has been revised and proofread, and ' + v.betas + ' readers finished it.', null));
+      if (v.goal === 'learn' || v.goal === 'message') out.push(P('for', 'timing', 3, 'Your goal does not need big sales', 'You want to ' + (v.goal === 'learn' ? 'learn the process' : 'share the message') + '. Shipping does that; sales are a bonus.', 'regret'));
+      if (v.backlist >= 1) out.push(P('for', 'reach', 1, 'You know KDP already', 'You have published before, so the account, tax and bank setup is done.', null));
+      if (v.words < 45000 && (v.genre === 'fable' || v.genre === 'selfhelp')) out.push(P('for', 'quality', 1, 'A short, giftable length', 'About ' + num(m.pages) + ' Kindle pages: a weekend read.', null));
+      out.push(P('for', 'risk', 1, 'You can fix it after launch', 'You can upload a corrected file at any time.', 'preorder'));
+      // against
+      if (aiDraft && v.revised === 'no') out.push(P('against', 'quality', v.aiShare === 'light' ? 5 : 3, 'It is not yet in your voice', 'The draft came from AI and you have not done your own revision pass. Readers notice generic prose, and unrevised AI text cannot be copyrighted.', 'copyright'));
+      else if (v.aiShare === 'light') out.push(P('against', 'quality', 2, 'Most of the text is still AI', 'Even after edits, the more of it that is yours, the stronger your rights and the better it reads.', 'copyright'));
+      if (v.copyedit === 'none') out.push(P('against', 'quality', 4, 'No proofread yet', 'Typos in the first pages draw early 1- and 2-star reviews, and those stay on the page while you have few reviews.', null));
+      if (v.betas < 3) out.push(P('against', 'quality', v.betas === 0 ? 3 : 2, 'Few outside readers', (v.betas === 0 ? 'Nobody outside has finished it yet.' : 'Only ' + v.betas + ' outside reader(s) so far.') + ' Three to five beta readers find slow chapters and confusing parts fast.', 'premortem'));
+      if (v.cover === 'ai') out.push(P('against', 'quality', 3, 'An AI-made cover', 'Readers judge by the thumbnail, and an AI image must be declared to KDP. A genre-savvy designer cover costs a few hundred dollars.', 'aiDisclosure'));
+      else if (v.cover === 'self') out.push(P('against', 'quality', 2, 'A homemade cover', 'Covers sell books. A designer who knows the genre usually beats a homemade cover.', null));
+      if (v.disclose === 'no') out.push(P('against', 'risk', 5, 'Hiding AI content risks your account', 'KDP requires you to declare AI-generated text and images. Getting caught can cost the whole account.', 'aiDisclosure'));
+      if (aiDraft && v.backlist > 0) out.push(P('against', 'risk', 2, 'Your other books share the account', 'Action on one title can reach the whole account, including your ' + v.backlist + ' published ' + plural(v.backlist, 'book', 'books') + '. Disclose truthfully and keep quality high.', 'aiDisclosure'));
+      out.push(P('against', 'money', v.goal === 'income' ? 4 : 2, 'Expect modest money at first', 'Base case for year one: about ' + num(m.units[1]) + ' sales or reads, around ' + usd(m.rev[1], 0) + '. 44% of indie authors earn $100 a month or less.', 'authorIncome'));
+      if (v.budget > 0) out.push(P('against', 'money', m.breakeven > m.units[1] ? 3 : 1, 'The budget takes time to earn back', 'You need about ' + num(m.breakeven) + ' sales or reads to earn back ' + money(v.budget) + '.', 'kdpRoyalty'));
+      if (v.audience < 500) out.push(P('against', 'reach', 3, 'A small launch audience', 'About 3.5 million self-published titles got ISBNs in 2025. Without people to tell, a new book is rarely seen.', 'bowker'));
+      if (v.hours < 2) out.push(P('against', 'reach', 2, 'Little time to promote it', 'Books that sell are usually promoted for weeks, not just announced once.', null));
+      if (!m.inBand) out.push(P('against', 'money', 2, 'Price outside the 70% band', 'At ' + usd(v.price) + ' you earn 35%. Between $2.99 and $12.99 you would earn 70%.', 'kdpRoyalty'));
+      if (v.ku === 'no' && (v.genre === 'romance' || v.genre === 'thriller' || v.genre === 'fantasy')) out.push(P('against', 'reach', 2, 'Genre readers live in Kindle+', 'Romance, thriller and fantasy readers borrow heavily through Kindle+.', 'kplus'));
+      return out;
+    },
+    checks: function (v, m) {
+      var voice = (v.aiShare === 'none' || v.aiShare === 'assist') ? 'pass' : v.aiShare === 'heavy' ? (v.revised === 'yes' ? 'pass' : 'warn') : (v.revised === 'yes' ? 'warn' : 'fail');
+      return [
+        C('AI content declared truthfully', v.disclose === 'yes' ? 'pass' : 'fail', v.disclose === 'yes' ? 'You will answer KDP\'s AI questions honestly.' : 'Required by KDP.', 'aiDisclosure'),
+        C('Text is in the author\'s own voice', voice, voice === 'pass' ? 'Written or rewritten by you.' : v.revised === 'yes' ? 'Mostly AI text, revised by you.' : 'AI draft without your own revision pass.', 'copyright'),
+        C('Proofread', v.copyedit === 'none' ? 'warn' : 'pass', v.copyedit === 'pro' ? 'Professional copy-edit.' : v.copyedit === 'self' ? 'Careful proofread.' : 'Not proofread yet.', null),
+        C('Outside readers', v.betas >= 3 ? 'pass' : 'warn', v.betas + ' finished it.', 'premortem'),
+        C('Cover ready to compete', v.cover === 'pro' ? 'pass' : 'warn', v.cover === 'pro' ? 'Designer cover.' : v.cover === 'ai' ? 'AI-made; must be declared.' : 'Homemade.', 'aiDisclosure'),
+        C('Price earns 70%', m.inBand ? 'pass' : 'warn', usd(v.price) + (m.inBand ? ' is in the $2.99 to $12.99 band.' : ' is outside the band.'), 'kdpRoyalty')
+      ];
+    },
+    flips: function (v, m) {
+      var f = [];
+      if ((v.aiShare === 'light' || v.aiShare === 'heavy') && v.revised === 'no') f.push('Finish your own revision pass, chapter by chapter, in your voice.');
+      if (v.copyedit === 'none') f.push('One careful proofread, by you and a sharp-eyed friend, or a professional.');
+      if (v.betas < 3) f.push('Three readers from your audience who finish it and tell you where they got bored.');
+      if (v.cover === 'ai') f.push('A designer cover, or at least a cover checked against the top 20 books in your category.');
+      if (v.timing === 'gift' && m.ready < 3) f.push('Use pre-order: list it now with a release date 2 to 4 weeks out, and upload the final file at least 72 hours before.');
+      return f;
+    },
+    steps: function (v, m) {
+      return ['Answer KDP\'s AI questions truthfully (they are private).',
+        'Line up 10 to 20 early readers to post honest reviews in week one; reviews cannot be paid for.',
+        'Tell your audience three times: the announcement, launch day, and when the first reviews arrive.',
+        'Compare your cover and description with the top 20 books in your exact category.',
+        'Check the KDP royalty page shows 70% for each store before you press Publish.'];
+    },
+    numbers: function (v, m) {
+      return [
+        { l: 'You earn per sale', v: usd(m.royalty), n: m.inBand ? '70% of ' + usd(v.price) + ' minus delivery' : '35% of ' + usd(v.price) },
+        { l: 'Kindle pages (estimate)', v: num(m.pages), n: 'About 187 words a page' },
+        { l: 'Per full Kindle+ read', v: usd(m.readVal), n: 'At about $0.0045 a page' },
+        { l: 'Year one, low / base / high', v: num(m.units[0]) + ' / ' + num(m.units[1]) + ' / ' + num(m.units[2]), n: 'Sales or full reads. Planning guesses, not forecasts.' },
+        { l: 'Year-one royalties, base case', v: usd(m.rev[1], 0), n: 'Low ' + usd(m.rev[0], 0) + ', high ' + usd(m.rev[2], 0) },
+        { l: 'Readiness', v: m.ready + ' of 4', n: 'Your voice, proofread, 3+ readers, pro cover', tone: m.ready >= 3 ? 'good' : m.ready >= 2 ? 'warn' : 'bad' }
+      ];
+    },
+    chart: function (v, m) {
+      var lo = [], base = [], hi = [];
+      for (var mo = 0; mo <= 12; mo++) {
+        // launch-heavy curve: 40% of year one lands in the first 2 months
+        var share = mo === 0 ? 0 : Math.min(1, 0.4 * Math.min(mo, 2) / 2 + 0.6 * Math.max(0, mo - 2) / 10);
+        lo.push([mo, m.rev[0] * share]); base.push([mo, m.rev[1] * share]); hi.push([mo, m.rev[2] * share]);
+      }
+      return { title: 'Royalties in year one (US $)', note: 'Rough planning ranges, front-loaded at launch. Your audience and reviews move these most.', x: 'Months after launch', series: [
+        { name: 'High', cls: 'for', pts: hi, dash: true }, { name: 'Base', cls: 'for', pts: base }, { name: 'Low', cls: 'against', pts: lo, dash: true }
+      ], zero: false, fmt: 'usd', mark: v.budget > 0 ? null : null };
+    }
+  };
+
+  // ================================================================ 6. SOMETHING ELSE
+  var CUSTOM = {
+    id: 'custom', name: 'Something else', blurb: 'A job offer, a course, a big purchase: any choice.',
+    question: function (v) { return v.what ? 'Should I ' + v.what.replace(/^should i\s+/i, '').replace(/\?+$/, '') + '?' : 'Should I do it?'; },
+    topics: { yours: 'Your own reasons', money: 'Money', undo: 'Can you undo it', heart: 'Gut and regret', people: 'People it affects' },
+    groups: [
+      { t: 'The decision', f: [
+        { id: 'what', l: 'What are you deciding?', type: 'text', def: 'take the new job offer', ph: 'e.g. take the new job offer' },
+        { id: 'pros', l: 'Reasons for (rate each 1 to 5)', type: 'list', def: [['Higher pay', 4], ['I would learn new skills', 3], ['Better title', 2]] },
+        { id: 'cons', l: 'Reasons against (rate each 1 to 5)', type: 'list', def: [['Longer commute', 3], ['Leaving a team I like', 3]] }
+      ] },
+      { t: 'Money', f: [
+        { id: 'oneTime', l: 'One-time cost', type: 'money', def: 0, step: 100 },
+        { id: 'monthly', l: 'Change in money per month (minus if you lose)', type: 'money', def: 600, step: 50, allowNeg: true },
+        { id: 'savings', l: 'Savings you have', type: 'money', def: 10000, step: 500 }
+      ] },
+      { t: 'The shape of it', f: [
+        { id: 'reversible', l: 'If it goes wrong, can you undo it?', type: 'select', def: 'hard', src: 'twoWay', options: [['easy', 'Easily'], ['hard', 'With some pain'], ['never', 'No']] },
+        { id: 'regret', l: 'In 10 years, how much would you regret NOT doing it?', type: 'select', def: '3', src: 'regret', options: [['5', 'A lot'], ['3', 'Some'], ['1', 'Hardly']] },
+        { id: 'gut', l: 'Your gut feeling', type: 'select', def: 'mixed', options: [['yes', 'Excited'], ['mixed', 'Mixed'], ['no', 'Dread']] },
+        { id: 'deadline', l: 'When must you decide?', type: 'select', def: 'soon', options: [['now', 'This week'], ['soon', 'Within a few months'], ['open', 'No deadline']] },
+        { id: 'talked', l: 'Have you talked it through with the people it affects?', type: 'select', def: 'no', options: YESNO }
+      ] }
+    ],
+    model: function (v) {
+      var pros = (v.pros || []).filter(function (r) { return r[0]; }), cons = (v.cons || []).filter(function (r) { return r[0]; });
+      var sum = function (a) { return a.reduce(function (s, r) { return s + clamp(+r[1] || 1, 1, 5); }, 0); };
+      var line = [];
+      for (var y = 0; y <= 5; y++) line.push([y, v.monthly * 12 * y - v.oneTime]);
+      return { pros: pros, cons: cons, forW: sum(pros), againstW: sum(cons), yearMoney: v.monthly * 12, costShare: v.oneTime / Math.max(1, v.savings), line: line };
+    },
+    argue: function (v, m) {
+      var out = [];
+      m.pros.forEach(function (r) { out.push(P('for', 'yours', +r[1] || 1, r[0], 'You rated this ' + (+r[1] || 1) + ' out of 5.', null)); });
+      m.cons.forEach(function (r) { out.push(P('against', 'yours', +r[1] || 1, r[0], 'You rated this ' + (+r[1] || 1) + ' out of 5.', null)); });
+      if (v.monthly > 0) out.push(P('for', 'money', v.monthly * 12 > v.savings * 0.25 ? 4 : 2, 'More money each year', 'About ' + money(v.monthly * 12) + ' a year better off.', null));
+      if (v.monthly < 0) out.push(P('against', 'money', -v.monthly * 12 > v.savings * 0.25 ? 4 : 3, 'Less money each year', 'About ' + money(-v.monthly * 12) + ' a year worse off.', null));
+      if (v.oneTime > v.savings * 0.5) out.push(P('against', 'money', v.oneTime > v.savings ? 5 : 4, 'It uses most of your savings', 'It costs ' + money(v.oneTime) + ' up front against ' + money(v.savings) + ' saved.', 'emergency'));
+      if (v.reversible === 'easy') out.push(P('for', 'undo', 3, 'Easy to undo', 'If it does not work out, you can go back. Two-way doors deserve quick decisions.', 'twoWay'));
+      if (v.reversible === 'never') out.push(P('against', 'undo', 4, 'You cannot undo it', 'One-way doors deserve slow, careful thought and a look at every risk first.', 'twoWay'));
+      if (v.regret === '5') out.push(P('for', 'heart', 4, 'You would regret not doing it', 'Over the long run, people regret what they did not do more than what they did.', 'regret'));
+      if (v.regret === '1') out.push(P('against', 'heart', 2, 'You would not miss it much', 'If skipping it would hardly bother you in 10 years, the bar to say yes is higher.', 'tenTenTen'));
+      if (v.gut === 'yes') out.push(P('for', 'heart', 2, 'Your gut says yes', 'Excitement is information about what you value.', null));
+      if (v.gut === 'no') out.push(P('against', 'heart', 3, 'Your gut says no', 'Dread is data. Find out what it is pointing at before you commit.', 'premortem'));
+      if (v.talked === 'no') out.push(P('against', 'people', 2, 'The people it affects have not weighed in', 'They may see a risk, or a way to make it work, that you cannot see alone.', null));
+      else out.push(P('for', 'people', 2, 'The people it affects are on board', 'You have talked it through with them.', null));
+      if (v.deadline === 'now' && v.reversible !== 'easy') out.push(P('against', 'undo', 2, 'Rushing a hard-to-undo choice', 'A short deadline on a one-way door is when a pre-mortem helps most.', 'premortem'));
+      return out;
+    },
+    checks: function (v, m) {
+      return [
+        C('You can afford the one-time cost', m.costShare <= 0.5 ? 'pass' : m.costShare <= 1 ? 'warn' : 'fail', money(v.oneTime) + ' against ' + money(v.savings) + ' saved.', 'emergency'),
+        C('The people affected have weighed in', v.talked === 'yes' ? 'pass' : 'warn', v.talked === 'yes' ? 'Yes.' : 'Not yet.', null),
+        C('Reversible, or carefully checked', v.reversible === 'never' ? 'warn' : 'pass', v.reversible === 'never' ? 'One-way door: do a pre-mortem.' : 'Can be undone.', 'twoWay')
+      ];
+    },
+    flips: function (v, m) {
+      var f = [];
+      if (v.reversible !== 'easy') f.push('A way to make it reversible: a trial period, a leave of absence, renting before buying.');
+      if (v.talked === 'no') f.push('A real conversation with the people it affects.');
+      if (m.costShare > 0.5) f.push('Saving more, or lowering the up-front cost.');
+      return f;
+    },
+    steps: function (v, m) {
+      return ['Do a 10-minute pre-mortem: imagine it is a year later and it went badly. Write down why.',
+        'Ask the 10-10-10 question: how will you feel in 10 minutes, 10 months and 10 years?',
+        'Talk to someone who made the same choice, both ways if you can.'];
+    },
+    numbers: function (v, m) {
+      return [
+        { l: 'Your reasons for (total weight)', v: String(m.forW) },
+        { l: 'Your reasons against (total weight)', v: String(m.againstW) },
+        { l: 'Money per year', v: (m.yearMoney >= 0 ? '+' : '') + money(m.yearMoney), tone: m.yearMoney >= 0 ? 'good' : 'bad' },
+        { l: 'One-time cost', v: money(v.oneTime), n: Math.round(m.costShare * 100) + '% of your savings' }
+      ];
+    },
+    chart: function (v, m) {
+      if (!v.monthly && !v.oneTime) return null;
+      return { title: 'Money over 5 years', note: 'One-time cost, then the monthly change.', x: 'Years', series: [{ name: 'Net money', cls: v.monthly >= 0 ? 'for' : 'against', pts: m.line }], zero: true, fmt: 'money' };
+    }
+  };
+
+  var CATS = [HOME, CAR, MOVE, INVEST, BOOK, CUSTOM];
+  var BY_ID = {}; CATS.forEach(function (c) { BY_ID[c.id] = c; });
+
+  // ---------------------------------------------------------------- run
+  function fieldsOf(cat) { var a = []; cat.groups.forEach(function (g) { g.f.forEach(function (f) { a.push(f); }); }); return a; }
+  function defaults(cat) { var v = {}; fieldsOf(cat).forEach(function (f) { v[f.id] = Array.isArray(f.def) ? f.def.map(function (r) { return r.slice(); }) : f.def; }); return v; }
+  function normalize(cat, values) {
+    var v = {}, kept = 0, total = 0;
+    fieldsOf(cat).forEach(function (f) {
+      var raw = values && values[f.id] !== undefined ? values[f.id] : f.def;
+      if (f.type === 'text' || f.type === 'select') v[f.id] = String(raw == null ? '' : raw);
+      else if (f.type === 'list') v[f.id] = Array.isArray(raw) ? raw : [];
+      else {
+        var n = typeof raw === 'number' ? raw : parseFloat(String(raw).replace(/[^0-9.\-]/g, ''));
+        if (!isFinite(n)) n = +f.def || 0;
+        if (!f.allowNeg && f.type !== 'pct') n = Math.max(0, n);
+        if (f.min != null) n = Math.max(f.min, n);
+        if (f.max != null) n = Math.min(f.max, n);
+        v[f.id] = n;
+      }
+      if (!f.opt && f.type !== 'text' && f.type !== 'list') { total++; if (JSON.stringify(v[f.id]) === JSON.stringify(f.def)) kept++; }
+    });
+    return { v: v, kept: kept, total: total };
+  }
+
+  var VERDICTS = {
+    go: { word: 'Go ahead', line: 'The case for is clearly stronger and nothing important failed.' },
+    cond: { word: 'Go, with conditions', line: 'It can work. Handle the conditions below first.' },
+    wait: { word: 'Not yet', line: 'Something important is not in place. Fix it first; the answer may change.' },
+    no: { word: 'Don\'t, as it stands', line: 'The case against is much stronger on your numbers.' }
+  };
+
+  function run(catId, values) {
+    var cat = BY_ID[catId] || HOME;
+    var nv = normalize(cat, values), v = nv.v;
+    var m = cat.model(v);
+    var pts = cat.argue(v, m);
+    var pros = pts.filter(function (p) { return p.side === 'for'; }).sort(function (a, b) { return b.w - a.w; });
+    var cons = pts.filter(function (p) { return p.side === 'against'; }).sort(function (a, b) { return b.w - a.w; });
+    var forW = pros.reduce(function (s, p) { return s + p.w; }, 0), againstW = cons.reduce(function (s, p) { return s + p.w; }, 0);
+    var score = (forW + againstW) ? Math.round(100 * (forW - againstW) / (forW + againstW)) : 0;
+    var checks = cat.checks(v, m);
+    var fails = checks.filter(function (c) { return c.status === 'fail'; }), warns = checks.filter(function (c) { return c.status === 'warn'; });
+    var verdict;
+    if (fails.length) verdict = score < -40 ? 'no' : 'wait';
+    else if (score >= 20) verdict = warns.length ? 'cond' : 'go';
+    else if (score >= -10) verdict = 'cond';
+    else if (score >= -40) verdict = 'wait';
+    else verdict = 'no';
+    var conf = 50 + Math.abs(score) * 0.45 - Math.min(18, nv.kept * 1.5) - (warns.length > 2 ? 5 : 0);
+    if (fails.length) conf = Math.max(conf, 70);
+    conf = Math.round(clamp(conf, 30, 92));
+    var vt = { word: VERDICTS[verdict].word, line: VERDICTS[verdict].line };
+    if (verdict === 'wait' && !fails.length) vt.line = 'On your numbers the case against is stronger for now. The items under "What would change the answer" could flip it.';
+    if (verdict === 'cond' && score < 20) vt.line = 'The two sides are close. It can work if you handle the conditions below.';
+    // rounds: one per topic, strongest topics first
+    var rounds = [];
+    Object.keys(cat.topics).forEach(function (t) {
+      var a = pros.filter(function (p) { return p.topic === t; })[0] || null;
+      var b = cons.filter(function (p) { return p.topic === t; })[0] || null;
+      if (!a && !b) return;
+      var aw = a ? a.w : 0, bw = b ? b.w : 0;
+      rounds.push({ topic: t, label: cat.topics[t], pro: a, con: b, winner: aw > bw ? 'for' : bw > aw ? 'against' : 'even', delta: aw - bw, max: Math.max(aw, bw) });
+    });
+    rounds.sort(function (x, y) { return y.max - x.max; });
+    rounds = rounds.slice(0, 5);
+    var used = {}; rounds.forEach(function (r) { if (r.pro) used[pros.indexOf(r.pro)] = 1; });
+    var usedC = {}; rounds.forEach(function (r) { if (r.con) usedC[cons.indexOf(r.con)] = 1; });
+    var morePros = pros.filter(function (p, i) { return !used[i]; }), moreCons = cons.filter(function (p, i) { return !usedC[i]; });
+    var lean = score > 0 ? 'for' : score < 0 ? 'against' : 'even';
+    var decider = fails.length ? null : (lean === 'against' ? cons[0] : pros[0]);
+    var factIds = {};
+    pts.forEach(function (p) { if (p.fact) factIds[p.fact] = 1; });
+    checks.forEach(function (c) { if (c.fact) factIds[c.fact] = 1; });
+    fieldsOf(cat).forEach(function (f) { if (f.src) factIds[f.src] = 1; });
+    var question = cat.question(v);
+    return {
+      cat: cat, catId: cat.id, v: v, m: m, question: question, pros: pros, cons: cons, forW: forW, againstW: againstW, score: score,
+      checks: checks, fails: fails, warns: warns, verdict: verdict, verdictText: vt, confidence: conf, kept: nv.kept, totalFields: nv.total,
+      rounds: rounds, morePros: morePros, moreCons: moreCons, lean: lean, decider: decider,
+      flips: cat.flips(v, m), steps: cat.steps(v, m), numbers: cat.numbers(v, m), chart: cat.chart(v, m),
+      facts: Object.keys(factIds).filter(function (k) { return FACTS[k]; })
+    };
+  }
+
+  function enablerSummary(r) {
+    var bits = [];
+    if (r.fails.length) bits.push('A hard check failed: ' + r.fails.map(function (c) { return c.label.toLowerCase(); }).join('; ') + '. That has to be fixed before the rest matters.');
+    var top = r.lean === 'against' ? r.cons[0] : r.pros[0];
+    var other = r.lean === 'against' ? r.pros[0] : r.cons[0];
+    if (top) bits.push('The strongest point is the ' + (r.lean === 'against' ? 'Skeptic' : 'Advocate') + '\'s: "' + top.title + '".' + (other ? ' The best answer from the other side, "' + other.title + '", does not outweigh it.' : ''));
+    if (r.lean === 'even') bits.push('The two sides are evenly matched, so your own priorities should break the tie.');
+    if (r.warns.length) bits.push('Watch: ' + r.warns.map(function (c) { return c.label.toLowerCase(); }).join('; ') + '.');
+    return bits.join(' ');
+  }
+
+  function summaryText(r) {
+    var L = [];
+    L.push(r.question);
+    L.push('The Enabler: ' + r.verdictText.word.toUpperCase() + ' (confidence ' + r.confidence + '%)');
+    L.push(enablerSummary(r));
+    L.push('');
+    L.push('Agent 1, the Advocate (for):');
+    r.pros.slice(0, 5).forEach(function (p) { L.push('- ' + p.title + ': ' + p.text); });
+    L.push('');
+    L.push('Agent 2, the Skeptic (against):');
+    r.cons.slice(0, 5).forEach(function (p) { L.push('- ' + p.title + ': ' + p.text); });
+    L.push('');
+    L.push('Hard checks:');
+    r.checks.forEach(function (c) { L.push('- [' + c.status.toUpperCase() + '] ' + c.label + ': ' + c.note); });
+    if (r.flips.length) { L.push(''); L.push('What would change the answer:'); r.flips.forEach(function (f) { L.push('- ' + f); }); }
+    L.push(''); L.push('Next steps:'); r.steps.forEach(function (s) { L.push('- ' + s); });
+    L.push(''); L.push('Made with The Decision Enabler. Facts checked ' + (root.DE && root.DE.FACTS_CHECKED || '') + '. Education only, not financial, legal or tax advice.');
+    return L.join('\n');
+  }
+
+  var api = {
+    CATS: CATS, BY_ID: BY_ID, CURRENCIES: CURRENCIES, setCurrency: setCurrency, getCurrency: getCurrency,
+    fieldsOf: fieldsOf, defaults: defaults, normalize: normalize, run: run, enablerSummary: enablerSummary, summaryText: summaryText,
+    fmt: { money: money, usd: usd, pct: pct, num: num, yrs: yrs },
+    math: { pmt: pmt, balanceAfter: balanceAfter, grow: grow, solve: solve, rentVsBuy: rentVsBuy, carValue: carValue },
+    VERDICTS: VERDICTS
+  };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else { root.DE = root.DE || {}; for (var k in api) root.DE[k] = api[k]; }
+})(typeof window !== 'undefined' ? window : this);
+</script>
+<script>/* Prompts for the live AI debate. Shared by the page (claude.ai "sample" capability)
+   and the optional server proxy (worker/), which gets a copy at build time.
+   Keep ASCII-only. */
+(function (root) {
+  'use strict';
+  /*PROMPTS-START*/
+  var COMMON = [
+    'You are one of three agents in The Decision Enabler, a tool that helps one person make a big decision.',
+    'Agent 1, the Advocate, argues for going ahead. Agent 2, the Skeptic, argues against it or for waiting. Agent 3, the Enabler, weighs both and points to a decision.',
+    'Write in plain, warm, direct English that anyone can follow. Short sentences. No jargon without a one-line explanation.',
+    'Ground every claim. Use the numbers in the case file and the dated research pack. When you add a fact of your own, name its source and year in brackets. If you are not sure of a fact, say what the person should check instead of guessing.',
+    'Never invent sources, prices, laws or statistics. Never promise outcomes.',
+    'This is general education, not financial, legal, tax or medical advice. Do not repeat this disclaimer; the page already shows it.'
+  ].join('\n');
+
+  var AGENTS = {
+    advocate: {
+      name: 'Agent 1 - The Advocate',
+      task: [
+        'You are Agent 1, the Advocate. Make the strongest HONEST case FOR going ahead.',
+        'Give 4 to 6 points. Format each point as: **Short title** - one to three sentences, tied to a specific number from the case file or a sourced fact.',
+        'Do not hide real risks; your job is to show how the upside answers them.',
+        'Finish with one line that starts "Best reason:".',
+        'Stay under 280 words.'
+      ].join('\n')
+    },
+    skeptic: {
+      name: 'Agent 2 - The Skeptic',
+      task: [
+        'You are Agent 2, the Skeptic. Make the strongest HONEST case AGAINST going ahead, or for waiting.',
+        'You have read the Advocate. Start by answering the Advocate\'s two strongest points directly, then add your own.',
+        'Give 4 to 6 points. Format each point as: **Short title** - one to three sentences, tied to a specific number from the case file or a sourced fact.',
+        'Do not be gloomy for its own sake; name the risk, how likely it is, and what it would cost.',
+        'Finish with one line that starts "Biggest risk:".',
+        'Stay under 280 words.'
+      ].join('\n')
+    },
+    advocate2: {
+      name: 'Agent 1 - The Advocate (reply)',
+      task: [
+        'You are Agent 1, the Advocate, replying to the Skeptic.',
+        'In at most 3 short points, answer the Skeptic\'s strongest arguments. Concede plainly where the Skeptic is right, and say what would make the risk acceptable.',
+        'Stay under 140 words.'
+      ].join('\n')
+    },
+    skeptic2: {
+      name: 'Agent 2 - The Skeptic (reply)',
+      task: [
+        'You are Agent 2, the Skeptic, replying to the Advocate.',
+        'In at most 3 short points, answer the Advocate\'s reply. Concede plainly where the Advocate is right, and name the one condition you would need to see before saying yes.',
+        'Stay under 140 words.'
+      ].join('\n')
+    },
+    enabler: {
+      name: 'Agent 3 - The Enabler',
+      task: [
+        'You are Agent 3, the Enabler. You do not take sides. You help the person decide.',
+        'Weigh both cases against the person\'s own numbers, the hard checks and their stated goals. A failed hard check outweighs any number of nice-to-haves.',
+        'Write exactly these sections, using these headings:',
+        '**Verdict:** one of GO / GO WITH CONDITIONS / NOT YET / DON\'T, then one sentence why.',
+        '**What decided it:** 2 or 3 bullets.',
+        '**Do this first:** up to 4 concrete steps, with numbers and dates where possible.',
+        '**What would change my answer:** 2 or 3 bullets.',
+        '**Ask yourself:** one question only the person can answer.',
+        'Stay under 330 words.',
+        'On the very last line, write exactly: VERDICT_JSON {"verdict":"go|cond|wait|no","confidence":<0-100>}'
+      ].join('\n')
+    }
+  };
+  var ORDER = ['advocate', 'skeptic', 'advocate2', 'skeptic2', 'enabler'];
+  var RESEARCH_NOTE = 'You may use web search up to 3 times to check facts specific to this person (local prices, rates, rules in their place). Prefer official and primary sources. Cite source and date for anything you use.';
+
+  function userTurn(stage, caseFile, transcript) {
+    var parts = ['CASE FILE', caseFile];
+    if (transcript && transcript.length) {
+      parts.push('DEBATE SO FAR');
+      transcript.forEach(function (t) { parts.push('--- ' + (AGENTS[t.stage] ? AGENTS[t.stage].name : t.stage) + ' ---\n' + t.text); });
+    }
+    parts.push('YOUR TURN\n' + AGENTS[stage].task);
+    return parts.join('\n\n');
+  }
+  // Single-string form for transports with no system prompt (claude.ai sample).
+  function fullPrompt(stage, caseFile, transcript, today) {
+    return COMMON + '\nToday is ' + today + '.\n\n' + userTurn(stage, caseFile, transcript);
+  }
+  function systemPrompt(today, research) {
+    return COMMON + '\nToday is ' + today + '.' + (research ? '\n' + RESEARCH_NOTE : '');
+  }
+  /*PROMPTS-END*/
+
+  var api = { COMMON: COMMON, AGENTS: AGENTS, ORDER: ORDER, RESEARCH_NOTE: RESEARCH_NOTE, userTurn: userTurn, fullPrompt: fullPrompt, systemPrompt: systemPrompt };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else { root.DE = root.DE || {}; root.DE.PROMPTS = api; }
+})(typeof window !== 'undefined' ? window : this);
+</script>
+<script>window.DE_CONFIG = {build: 'site', aiEndpoint: ""};
+window.DE_PRESETS = [];</script>
+<script>/* The Decision Enabler - page logic. ASCII-only. */
+(function () {
+  'use strict';
+  var DE = window.DE, F = DE.fmt;
+  var CFG = window.DE_CONFIG || {};
+  var PRESETS = window.DE_PRESETS || [];
+  var $ = function (id) { return document.getElementById(id); };
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  var LS = {
+    get: function (k, d) { try { var s = window.localStorage.getItem(k); return s ? JSON.parse(s) : d; } catch (e) { return d; } },
+    set: function (k, v) { try { window.localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage off */ } }
+  };
+  var reduceMotion = false;
+  try { reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { /* old browser */ }
+
+  // ------------------------------------------------------------ state
+  var draft = LS.get('de-draft-v1', null) || {};
+  var S = {
+    cat: 'home',
+    all: draft.all || {},          // per category: { values, touched, notes }
+    cur: draft.cur || 'USD',
+    result: null,
+    playTimer: null,
+    live: { kind: null, checked: false, running: false, ctrl: null, turns: [], stamp: null, forKey: null }
+  };
+  DE.setCurrency(S.cur);
+  function slot(cat) {
+    if (!S.all[cat]) S.all[cat] = { values: DE.defaults(DE.BY_ID[cat]), touched: {}, notes: '' };
+    var s = S.all[cat], d = DE.defaults(DE.BY_ID[cat]);
+    Object.keys(d).forEach(function (k) { if (s.values[k] === undefined) s.values[k] = d[k]; });
+    return s;
+  }
+  var saveDraftT = null;
+  function saveDraft() { clearTimeout(saveDraftT); saveDraftT = setTimeout(function () { LS.set('de-draft-v1', { all: S.all, cur: S.cur, cat: S.cat }); }, 300); }
+
+  function toast(msg) { var t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(function () { t.hidden = true; }, 2600); }
+
+  // ------------------------------------------------------------ currency
+  function renderCurrency() {
+    var sel = $('cur'); sel.replaceChildren();
+    Object.keys(DE.CURRENCIES).forEach(function (k) {
+      var o = el('option', null, DE.CURRENCIES[k].sym + ' ' + k); o.value = k; if (k === S.cur) o.selected = true; sel.append(o);
+    });
+    sel.onchange = function () { S.cur = sel.value; DE.setCurrency(S.cur); saveDraft(); renderForm(); update(false); };
+  }
+
+  // ------------------------------------------------------------ picker
+  function renderPicker() {
+    var p = $('picker'); p.replaceChildren();
+    DE.CATS.forEach(function (c) {
+      var b = el('button', 'tile'); b.type = 'button'; b.setAttribute('aria-pressed', String(c.id === S.cat));
+      var t = el('span', 't'); t.append(el('span', null, c.name), el('span', 'tick'));
+      b.append(t, el('span', 'b', c.blurb));
+      b.addEventListener('click', function () { selectCat(c.id, true); });
+      p.append(b);
+    });
+  }
+  function selectCat(id, scroll) {
+    if (!DE.BY_ID[id]) return;
+    S.cat = id; slot(id); saveDraft();
+    try { history.replaceState(null, '', '#' + id); } catch (e) { /* sandboxed */ }
+    renderPicker(); renderForm(); update(false); resetLive();
+    if (scroll) $('facts').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  // ------------------------------------------------------------ form
+  function sym() { return DE.CURRENCIES[S.cur].sym; }
+  function factLink(id) {
+    var f = DE.FACTS[id]; if (!f) return null;
+    if (f.u) { var a = el('a', null, f.s); a.href = f.u; a.target = '_blank'; a.rel = 'noopener'; a.title = f.t; return a; }
+    return el('span', null, f.s);
+  }
+  function renderNotice() {
+    var n = $('notice'), cat = DE.BY_ID[S.cat], r = S.result; n.replaceChildren();
+    var p = el('p');
+    if (r && r.kept === r.totalFields) p.textContent = 'You are looking at example values. Change any box and the agents re-argue instantly.';
+    else if (r) p.textContent = (r.totalFields - r.kept) + ' of ' + r.totalFields + ' boxes hold your own values. ' + (r.kept ? r.kept + ' still hold examples.' : 'All yours.');
+    if (cat.usdOnly && S.cur !== 'USD') p.textContent += ' KDP prices and royalties stay in US dollars.';
+    n.append(p);
+    var ps = PRESETS.filter(function (x) { return x.cat === S.cat; });
+    if (ps.length) {
+      var box = el('div', 'presets'); box.append(el('span', 'muted', 'Load:'));
+      ps.forEach(function (pr) {
+        var b = el('button', 'chip', pr.label); b.type = 'button';
+        b.addEventListener('click', function () {
+          var s = slot(S.cat), d = DE.defaults(cat);
+          s.values = Object.assign({}, d, pr.values); s.touched = {}; Object.keys(pr.values).forEach(function (k) { s.touched[k] = true; });
+          s.notes = pr.notes || ''; saveDraft(); renderForm(); update(false); toast('Loaded: ' + pr.label);
+        });
+        box.append(b);
+      });
+      n.append(box);
+    }
+  }
+  function affix(f) {
+    if (f.type === 'money' || f.type === 'money2') return { pre: sym() };
+    if (f.type === 'usd') return { pre: '$' };
+    if (f.type === 'pct') return { post: '%' };
+    if (f.unit) return { post: f.unit };
+    return {};
+  }
+  function renderForm() {
+    var form = $('form'), cat = DE.BY_ID[S.cat], s = slot(S.cat); form.replaceChildren();
+    cat.groups.forEach(function (g) {
+      var fs = el('fieldset', 'grp'); fs.append(el('legend', null, g.t));
+      g.f.forEach(function (f) { fs.append(fieldEl(f, s)); });
+      form.append(fs);
+    });
+    $('notes').value = s.notes || '';
+    renderNotice();
+  }
+  function isDefault(f, val) { return JSON.stringify(val) === JSON.stringify(f.def); }
+  function fieldEl(f, s) {
+    var wrap = el('div', 'field' + (isDefault(f, s.values[f.id]) ? '' : ' changed')), id = 'f-' + S.cat + '-' + f.id;
+    var lab = el('label', null, f.l); lab.htmlFor = id; wrap.append(lab);
+    if (f.type === 'list') { wrap.append(listEl(f, s, id)); }
+    else {
+      var box = el('div', 'inbox'), a = affix(f), input;
+      if (a.pre) box.append(el('span', 'aff', a.pre));
+      if (f.type === 'select') {
+        input = el('select'); f.options.forEach(function (o) { var op = el('option', null, o[1]); op.value = o[0]; input.append(op); });
+        input.value = s.values[f.id];
+      } else {
+        input = el('input'); input.id = id;
+        if (f.type === 'text') { input.type = 'text'; input.className = 'text'; input.placeholder = f.ph || ''; input.value = s.values[f.id] || ''; }
+        else {
+          input.type = 'number'; input.inputMode = 'decimal'; input.step = f.step || 'any';
+          if (f.min != null) input.min = f.min; else if (!f.allowNeg) input.min = 0;
+          if (f.max != null) input.max = f.max;
+          input.value = s.values[f.id];
+        }
+      }
+      input.id = id; input.name = f.id;
+      input.addEventListener(f.type === 'select' ? 'change' : 'input', function () { onField(f, input.value, wrap); });
+      box.append(input);
+      if (a.post) box.append(el('span', 'aff', a.post));
+      wrap.append(box);
+    }
+    if (f.h || f.src) {
+      var h = el('div', 'hint');
+      if (f.h) h.append(document.createTextNode(f.h + ' '));
+      if (f.src && DE.FACTS[f.src]) { h.append(document.createTextNode('Source: ')); h.append(factLink(f.src)); }
+      wrap.append(h);
+    }
+    return wrap;
+  }
+  function listEl(f, s, id) {
+    var box = el('div', 'listrows');
+    function draw() {
+      box.replaceChildren();
+      var rows = s.values[f.id];
+      rows.forEach(function (r, i) {
+        var row = el('div', 'listrow');
+        var t = el('input'); t.type = 'text'; t.value = r[0]; t.placeholder = 'A reason'; t.setAttribute('aria-label', f.l + ' ' + (i + 1)); if (i === 0) t.id = id;
+        t.addEventListener('input', function () { r[0] = t.value; s.touched[f.id] = true; changed(); });
+        var w = el('select'); w.setAttribute('aria-label', 'Weight 1 to 5');
+        [1, 2, 3, 4, 5].forEach(function (k) { var o = el('option', null, String(k)); o.value = k; w.append(o); });
+        w.value = r[1];
+        w.addEventListener('change', function () { r[1] = +w.value; s.touched[f.id] = true; changed(); });
+        var x = el('button', 'iconbtn', 'x'); x.type = 'button'; x.setAttribute('aria-label', 'Remove this reason');
+        x.addEventListener('click', function () { rows.splice(i, 1); s.touched[f.id] = true; draw(); changed(); });
+        row.append(t, w, x); box.append(row);
+      });
+      var add = el('button', 'linkbtn', '+ Add a reason'); add.type = 'button';
+      add.addEventListener('click', function () { rows.push(['', 3]); draw(); var ins = box.querySelectorAll('input'); if (ins.length) ins[ins.length - 1].focus(); });
+      box.append(add);
+    }
+    draw();
+    return box;
+  }
+  function onField(f, raw, wrap) {
+    var s = slot(S.cat), cat = DE.BY_ID[S.cat];
+    var val = (f.type === 'select' || f.type === 'text') ? raw : (raw === '' ? '' : parseFloat(raw));
+    s.values[f.id] = val; s.touched[f.id] = true;
+    wrap.classList.toggle('changed', !isDefault(f, val));
+    if (cat.linked) {
+      var upd = cat.linked(f.id, s.values, s.touched);
+      if (upd) Object.keys(upd).forEach(function (k) {
+        s.values[k] = upd[k];
+        var inp = document.getElementById('f-' + S.cat + '-' + k); if (inp) inp.value = upd[k];
+      });
+    }
+    changed();
+  }
+  var updT = null;
+  function changed() { saveDraft(); clearTimeout(updT); updT = setTimeout(function () { update(false); }, 180); }
+
+  // ------------------------------------------------------------ meter
+  function meter(box, score, label) {
+    box.replaceChildren();
+    var tr = el('div', 'track'); tr.append(el('div', 'mid'));
+    var k = el('div', 'knob'); k.style.left = (50 - score / 2) + '%'; tr.append(k);
+    tr.setAttribute('role', 'img');
+    tr.setAttribute('aria-label', 'Balance: ' + (score > 0 ? 'leans for by ' + score : score < 0 ? 'leans against by ' + (-score) : 'even') + ' on a scale of 100');
+    var ends = el('div', 'ends'); ends.append(el('span', 'f', 'For'), el('span', 'a', 'Against'));
+    var rd = el('div', 'read'); rd.innerHTML = label || leanText(score);
+    box.append(ends, tr, rd);
+    return k;
+  }
+  function leanText(score) {
+    if (score === 0) return '<b>Even</b>';
+    return 'Leans <b>' + (score > 0 ? 'for' : 'against') + '</b> by ' + Math.abs(score) + ' of 100';
+  }
+
+  // ------------------------------------------------------------ results
+  function update(animate) {
+    var s = slot(S.cat), vals = {};
+    Object.keys(s.values).forEach(function (k) { vals[k] = s.values[k] === '' ? undefined : s.values[k]; });
+    var r = DE.run(S.cat, vals); S.result = r;
+    renderNotice();
+    var q = $('qline'); q.replaceChildren(document.createTextNode(r.question + ' '));
+    if (r.kept === r.totalFields) q.append(el('span', 'example-tag', 'Example values'));
+    renderRounds(r, animate);
+    renderMore(r);
+    renderNumbers(r);
+    renderChart(r);
+    renderRuling(r);
+    meter($('heroMeter'), r.score);
+    var hc = $('heroCall'); hc.replaceChildren(document.createTextNode('For "' + r.question + '" the call is '));
+    hc.append(el('b', null, r.verdictText.word.toLowerCase())); hc.append(document.createTextNode('.'));
+    if (!animate) meter($('meter'), r.score);
+    markLiveStale();
+  }
+  function dots(w) { var d = el('span', 'dots'); d.setAttribute('aria-label', 'Strength ' + w + ' of 5'); for (var i = 1; i <= 5; i++) d.append(el('i', i <= w ? 'on' : '')); return d; }
+  function sayEl(p, side) {
+    if (!p) {
+      var n = el('div', 'say none');
+      n.textContent = side === 'for' ? 'The Advocate has no strong point on this topic.' : 'The Skeptic has no strong answer on this topic.';
+      return n;
+    }
+    var b = el('div', 'say ' + side);
+    b.append(el('div', 'spk', side === 'for' ? 'Agent 1 - Advocate' : 'Agent 2 - Skeptic'), el('div', 'ttl', p.title), el('div', 'txt', p.text));
+    var ft = el('div', 'foot'); ft.append(dots(p.w));
+    if (p.fact && DE.FACTS[p.fact]) { var l = factLink(p.fact); if (l.tagName === 'A') l.className = 'src'; ft.append(l); }
+    b.append(ft);
+    return b;
+  }
+  function renderRounds(r, animate) {
+    var box = $('rounds'); box.replaceChildren(); box.classList.remove('playing');
+    clearTimeout(S.playTimer);
+    r.rounds.forEach(function (rd, i) {
+      var c = el('div', 'round');
+      var h = el('div', 'round-head'); var lb = el('div', 'lbl'); lb.append(el('span', null, 'Round ' + (i + 1)), document.createTextNode(rd.label));
+      var won = el('span', 'won ' + rd.winner, rd.winner === 'for' ? 'Point to the Advocate' : rd.winner === 'against' ? 'Point to the Skeptic' : 'Even');
+      h.append(lb, won);
+      var pair = el('div', 'pair'); pair.append(sayEl(rd.pro, 'for'), sayEl(rd.con, 'against'));
+      c.append(h, pair); box.append(c);
+    });
+    var k = meter($('meter'), animate ? 0 : r.score, animate ? 'Listening...' : null);
+    if (!animate || reduceMotion) return;
+    box.classList.add('playing');
+    var cards = box.querySelectorAll('.round'), cum = 0, total = r.rounds.reduce(function (s, x) { return s + Math.abs(x.delta); }, 0) || 1;
+    var i = 0;
+    function step() {
+      if (i < cards.length) {
+        cards[i].classList.add('in');
+        cum += r.rounds[i].delta;
+        var pos = Math.max(-100, Math.min(100, Math.round(cum / total * 100)));
+        k.style.left = (50 - pos / 2) + '%';
+        i++; S.playTimer = setTimeout(step, 750);
+      } else {
+        meter($('meter'), r.score);
+        box.classList.remove('playing');
+        var ru = $('ruling'); ru.animate && ru.animate([{ transform: 'scale(.98)', opacity: .6 }, { transform: 'none', opacity: 1 }], { duration: 400, easing: 'ease-out' });
+      }
+    }
+    S.playTimer = setTimeout(step, 250);
+  }
+  function renderMore(r) {
+    var mc = $('morecols'); mc.replaceChildren();
+    var a = el('div'), b = el('div'); a.style.display = b.style.display = 'grid'; a.style.gap = b.style.gap = '8px';
+    a.append(el('div', 'eyebrow', 'More from the Advocate (' + r.morePros.length + ')'));
+    b.append(el('div', 'eyebrow', 'More from the Skeptic (' + r.moreCons.length + ')'));
+    r.morePros.forEach(function (p) { a.append(sayEl(p, 'for')); });
+    r.moreCons.forEach(function (p) { b.append(sayEl(p, 'against')); });
+    if (!r.morePros.length) a.append(el('p', 'muted', 'Nothing more.'));
+    if (!r.moreCons.length) b.append(el('p', 'muted', 'Nothing more.'));
+    mc.append(a, b);
+    $('more').hidden = !(r.morePros.length || r.moreCons.length);
+  }
+  function renderNumbers(r) {
+    var box = $('nums'); box.replaceChildren();
+    r.numbers.forEach(function (n) {
+      var row = el('div', 'row'), k = el('div', 'k', n.l);
+      if (n.n) k.append(el('small', null, n.n));
+      row.append(k, el('div', 'v' + (n.tone ? ' ' + n.tone : ''), n.v)); box.append(row);
+    });
+  }
+
+  // ------------------------------------------------------------ chart (inline SVG)
+  function compact(n, kind) {
+    var s = kind === 'usd' ? '$' : sym(), a = Math.abs(n), neg = n < 0 ? '-' : '';
+    if (a >= 1e6) return neg + s + (a / 1e6).toFixed(a >= 1e7 ? 0 : 1) + 'M';
+    if (a >= 1e3) return neg + s + (a / 1e3).toFixed(a >= 1e5 ? 0 : (a >= 1e4 ? 0 : 1)) + 'k';
+    return neg + s + Math.round(a);
+  }
+  function niceStep(span, n) {
+    var raw = span / n, p = Math.pow(10, Math.floor(Math.log10(raw || 1))), m = raw / p;
+    return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p;
+  }
+  function renderChart(r) {
+    var box = $('chartPanel'), spec = r.chart; box.replaceChildren();
+    if (!spec) { box.hidden = true; return; }
+    box.hidden = false;
+    box.append(el('h3', null, spec.title));
+    var W = Math.max(280, Math.min(720, Math.round((box.clientWidth || 592) - 32))), H = Math.round(Math.max(190, Math.min(260, W * 0.62))), L = 52, R = 60, T = 16, B = 34;
+    var xs = [], ys = [0];
+    spec.series.forEach(function (s) { s.pts.forEach(function (p) { xs.push(p[0]); ys.push(p[1]); }); });
+    var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
+    var y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+    if (y1 === y0) y1 = y0 + 1;
+    var st = niceStep(y1 - y0, 4); y0 = Math.floor(y0 / st) * st; y1 = Math.ceil(y1 / st) * st;
+    var X = function (x) { return L + (x - x0) / ((x1 - x0) || 1) * (W - L - R); };
+    var Y = function (y) { return T + (y1 - y) / (y1 - y0) * (H - T - B); };
+    var o = [];
+    o.push('<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(spec.title) + '">');
+    for (var gy = y0; gy <= y1 + st / 2; gy += st) {
+      o.push('<line class="grid" x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(gy).toFixed(1) + '" y2="' + Y(gy).toFixed(1) + '"/>');
+      o.push('<text x="' + (L - 8) + '" y="' + (Y(gy) + 4).toFixed(1) + '" text-anchor="end">' + esc(compact(gy, spec.fmt)) + '</text>');
+    }
+    if (spec.zero && y0 < 0 && y1 > 0) o.push('<line class="zero" x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(0).toFixed(1) + '" y2="' + Y(0).toFixed(1) + '"/>');
+    o.push('<line class="axis" x1="' + L + '" x2="' + (W - R) + '" y1="' + (H - B) + '" y2="' + (H - B) + '"/>');
+    var xst = Math.max(1, Math.ceil((x1 - x0) / 8));
+    for (var gx = x0; gx <= x1; gx += xst) o.push('<text x="' + X(gx).toFixed(1) + '" y="' + (H - B + 18) + '" text-anchor="middle">' + gx + '</text>');
+    if (spec.mark != null && spec.mark >= x0 && spec.mark <= x1) {
+      o.push('<line class="mark" x1="' + X(spec.mark).toFixed(1) + '" x2="' + X(spec.mark).toFixed(1) + '" y1="' + T + '" y2="' + (H - B) + '"/>');
+      o.push('<text class="marklbl" x="' + (X(spec.mark) + 5).toFixed(1) + '" y="' + (T + 10) + '">' + esc(spec.markLabel || '') + '</text>');
+    }
+    var main = spec.series.filter(function (s) { return !s.dash; })[0];
+    if (main && spec.series.length === 1) {
+      var base = Y(Math.max(y0, Math.min(0, y1)));
+      var ar = 'M' + X(main.pts[0][0]).toFixed(1) + ' ' + base.toFixed(1) + main.pts.map(function (p) { return ' L' + X(p[0]).toFixed(1) + ' ' + Y(p[1]).toFixed(1); }).join('') + ' L' + X(main.pts[main.pts.length - 1][0]).toFixed(1) + ' ' + base.toFixed(1) + ' Z';
+      o.push('<path class="area ' + main.cls + '" d="' + ar + '"/>');
+    }
+    var ends = [];
+    spec.series.forEach(function (s) {
+      var d = s.pts.map(function (p, i) { return (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ' ' + Y(p[1]).toFixed(1); }).join(' ');
+      o.push('<path class="s ' + s.cls + (s.dash ? ' dash' : '') + '" d="' + d + '"/>');
+      var last = s.pts[s.pts.length - 1];
+      o.push('<circle class="dot ' + s.cls + '" cx="' + X(last[0]).toFixed(1) + '" cy="' + Y(last[1]).toFixed(1) + '" r="3.5"/>');
+      ends.push({ y: Y(last[1]), t: compact(last[1], spec.fmt), cls: s.cls });
+    });
+    ends.sort(function (a, b) { return a.y - b.y; });
+    for (var i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
+    ends.forEach(function (e) { o.push('<text class="endlbl ' + e.cls + '" x="' + (W - R + 8) + '" y="' + (Math.min(H - B, e.y) + 4).toFixed(1) + '">' + esc(e.t) + '</text>'); });
+    o.push('<text x="' + ((L + W - R) / 2) + '" y="' + (H - 2) + '" text-anchor="middle">' + esc(spec.x) + '</text>');
+    o.push('</svg>');
+    var holder = el('div'); holder.innerHTML = o.join(''); box.append(holder);
+    if (spec.series.length > 1) {
+      var lg = el('div', 'legend');
+      spec.series.forEach(function (s) { var sp = el('span'); sp.append(el('i', s.cls + (s.dash ? ' dash' : '')), document.createTextNode(s.name)); lg.append(sp); });
+      box.append(lg);
+    }
+    if (spec.note) box.append(el('p', 'muted', spec.note)), box.lastChild.style.fontSize = '12.5px';
+  }
+
+  // ------------------------------------------------------------ ruling
+  function renderRuling(r) {
+    var box = $('ruling'); box.replaceChildren();
+    var top = el('div', 'ruling-top'), left = el('div');
+    left.append(el('div', 'eyebrow', 'Agent 3 - the Enabler'));
+    var st = el('div', 'stamp ' + r.verdict, r.verdictText.word); left.append(el('div'));
+    left.lastChild.style.marginTop = '10px'; left.lastChild.append(st);
+    left.append(el('p', 'line', r.verdictText.line), el('p', 'why', DE.enablerSummary(r)));
+    var right = el('div', 'conf');
+    var cb = el('div'); cb.innerHTML = '<b>Confidence ' + r.confidence + '%</b>';
+    var bar = el('div', 'bar'), bi = el('i'); bi.style.width = r.confidence + '%'; bar.append(bi);
+    var note = el('small', null, 'How far apart the two cases are, less a little for every box still holding an example value' + (r.kept ? ' (' + r.kept + ' now).' : '.'));
+    var mm = el('div', 'meter'); meter(mm, r.score);
+    right.append(cb, bar, note, mm);
+    top.append(left, right); box.append(top);
+
+    var cols = el('div', 'cols3');
+    var c1 = el('div'); c1.append(el('h3', null, 'Hard checks'));
+    var ul = el('ul', 'checks');
+    r.checks.forEach(function (c) {
+      var li = el('li'); li.append(el('span', 'st ' + c.status, c.status === 'pass' ? 'v' : c.status === 'warn' ? '!' : 'x'));
+      var t = el('div'); t.append(el('b', null, c.label), el('small', null, c.note)); li.append(t); ul.append(li);
+      li.firstChild.setAttribute('aria-label', c.status === 'pass' ? 'Passed' : c.status === 'warn' ? 'Warning' : 'Failed');
+    });
+    c1.append(ul);
+    var c2 = el('div'); c2.append(el('h3', null, 'What would change the answer'));
+    var ul2 = el('ul', 'plain'); (r.flips.length ? r.flips : ['Nothing obvious: the answer holds across small changes.']).forEach(function (f) { ul2.append(el('li', null, f)); });
+    c2.append(ul2);
+    var c3 = el('div'); c3.append(el('h3', null, 'Your next steps'));
+    var ul3 = el('ul', 'todo');
+    r.steps.forEach(function (s, i) {
+      var li = el('li'), lab = el('label'), cb2 = el('input'); cb2.type = 'checkbox'; cb2.id = 'step-' + S.cat + '-' + i;
+      cb2.addEventListener('change', function () { lab.classList.toggle('done', cb2.checked); });
+      lab.htmlFor = cb2.id; lab.append(cb2, el('span', null, s)); li.append(lab); ul3.append(li);
+    });
+    c3.append(ul3);
+    cols.append(c1, c2, c3); box.append(cols);
+
+    var det = el('details', 'research'); det.append(el('summary', null, 'Research behind this call (' + r.facts.length + ' sources, checked ' + DE.FACTS_CHECKED + ')'));
+    var fl = el('ul', 'factlist');
+    r.facts.forEach(function (id) {
+      var f = DE.FACTS[id], li = el('li'); li.append(el('span', null, f.t));
+      var sm = el('small'); var l = factLink(id); sm.append(l, document.createTextNode(' - ' + f.d)); li.append(sm); fl.append(li);
+    });
+    det.append(fl); box.append(det);
+  }
+
+  // ------------------------------------------------------------ copy / save
+  function copySummary() {
+    var text = DE.summaryText(S.result);
+    var fb = function () {
+      var box = $('copyFallback'); box.hidden = false; box.replaceChildren();
+      var ta = el('textarea', 'copybox'); ta.value = text; ta.readOnly = true; ta.setAttribute('aria-label', 'Summary text'); box.append(el('p', 'muted', 'Copy did not work here. The text is selected below; press Ctrl+C (or Cmd+C).'), ta);
+      ta.focus(); ta.select();
+    };
+    try { navigator.clipboard.writeText(text).then(function () { toast('Summary copied'); }, fb); } catch (e) { fb(); }
+  }
+  function savedList() { return LS.get('de-saved-v1', []); }
+  function saveDecision() {
+    var r = S.result, s = slot(S.cat), list = savedList();
+    list.unshift({ id: Date.now(), cat: S.cat, q: r.question, verdict: r.verdict, word: r.verdictText.word, score: r.score, date: new Date().toISOString().slice(0, 10), values: JSON.parse(JSON.stringify(s.values)), notes: s.notes, cur: S.cur });
+    LS.set('de-saved-v1', list.slice(0, 50)); renderSavedCount(); toast('Saved to My decisions');
+  }
+  function renderSavedCount() { $('savedN').textContent = String(savedList().length); }
+  function renderSheet() {
+    var sh = $('savedSheet'), list = savedList(); sh.replaceChildren();
+    var hd = el('div'); hd.style.display = 'flex'; hd.style.justifyContent = 'space-between'; hd.style.alignItems = 'center';
+    hd.append(el('h3', null, 'My decisions'));
+    var x = el('button', 'iconbtn', 'x'); x.type = 'button'; x.style.width = '32px'; x.style.height = '32px'; x.setAttribute('aria-label', 'Close'); x.addEventListener('click', closeSheet); hd.append(x);
+    sh.append(hd);
+    if (!list.length) { sh.append(el('p', 'muted', 'Nothing saved yet. Run a decision, then press "Save to My decisions". Saved decisions stay in this browser only.')); return; }
+    list.forEach(function (it, idx) {
+      var row = el('div', 'item'), t = el('div'); t.append(el('b', null, it.q)); t.append(el('small', null, it.word + ' - ' + it.date));
+      var btns = el('div'); btns.style.display = 'flex'; btns.style.gap = '6px';
+      var open = el('button', 'chip', 'Open'); open.type = 'button';
+      open.addEventListener('click', function () {
+        S.cur = it.cur || S.cur; DE.setCurrency(S.cur); renderCurrency();
+        var s = slot(it.cat); s.values = Object.assign(DE.defaults(DE.BY_ID[it.cat]), it.values); s.notes = it.notes || '';
+        closeSheet(); selectCat(it.cat, true);
+      });
+      var del = el('button', 'chip', 'Delete'); del.type = 'button';
+      del.addEventListener('click', function () {
+        if (del.dataset.sure) { var l = savedList(); l.splice(idx, 1); LS.set('de-saved-v1', l); renderSavedCount(); renderSheet(); }
+        else { del.dataset.sure = '1'; del.textContent = 'Sure?'; }
+      });
+      btns.append(open, del); row.append(t, btns); sh.append(row);
+    });
+  }
+  function openSheet() { renderSheet(); $('savedSheet').hidden = false; $('savedBtn').setAttribute('aria-expanded', 'true'); }
+  function closeSheet() { $('savedSheet').hidden = true; $('savedBtn').setAttribute('aria-expanded', 'false'); }
+
+  // ------------------------------------------------------------ live AI debate
+  function fmtVal(f, val) {
+    if (f.type === 'select') { var o = f.options.filter(function (x) { return x[0] === val; })[0]; return o ? o[1] : val; }
+    if (f.type === 'list') return (val || []).filter(function (r) { return r[0]; }).map(function (r) { return r[0] + ' (' + r[1] + '/5)'; }).join('; ') || 'none';
+    if (f.type === 'money') return F.money(val);
+    if (f.type === 'money2') return DE.CURRENCIES[S.cur].sym + Number(val).toFixed(2);
+    if (f.type === 'usd') return F.usd(val);
+    if (f.type === 'pct') return val + '%';
+    if (f.type === 'text') return val || '(not given)';
+    return String(val) + (f.unit ? ' ' + f.unit : '');
+  }
+  function caseFile(r, notes) {
+    var cat = r.cat, L = [];
+    L.push('Decision: ' + r.question);
+    L.push('Decision type: ' + cat.name);
+    L.push('Currency: ' + (cat.usdOnly ? 'KDP prices in US dollars; other money in ' : '') + DE.CURRENCIES[S.cur].name + '.');
+    L.push(''); L.push("The person's facts:");
+    DE.fieldsOf(cat).forEach(function (f) { L.push('- ' + f.l + ': ' + fmtVal(f, r.v[f.id])); });
+    L.push(''); L.push('Calculated by the app:');
+    r.numbers.forEach(function (n) { L.push('- ' + n.l + ': ' + n.v + (n.n ? ' (' + n.n + ')' : '')); });
+    L.push(''); L.push('Hard checks:');
+    r.checks.forEach(function (c) { L.push('- [' + c.status.toUpperCase() + '] ' + c.label + ': ' + c.note); });
+    L.push(''); L.push('Research pack (checked ' + DE.FACTS_CHECKED + '):');
+    r.facts.forEach(function (id) { var f = DE.FACTS[id]; L.push('- ' + f.t + ' [' + f.s + ', ' + f.d + ']'); });
+    if (notes) { L.push(''); L.push('Notes from the person: ' + notes); }
+    return L.join('\n');
+  }
+  var BULLET = new RegExp('^\\s*(?:[-*' + String.fromCharCode(8226) + ']|\\d+[.)])\\s+(.*)$');
+  function md(text) {
+    var lines = esc(text).split(/\n/), out = [], list = false, para = [];
+    function flush() { if (para.length) { out.push('<p>' + para.join('<br>') + '</p>'); para = []; } }
+    lines.forEach(function (ln) {
+      var m = ln.match(BULLET);
+      if (m) { flush(); if (!list) { out.push('<ul>'); list = true; } out.push('<li>' + m[1] + '</li>'); return; }
+      if (list) { out.push('</ul>'); list = false; }
+      if (!ln.trim()) { flush(); return; }
+      para.push(ln.replace(/^#{1,4}\s*/, ''));
+    });
+    flush(); if (list) out.push('</ul>');
+    return out.join('').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  }
+  var STAGE_SIDE = { advocate: 'for', advocate2: 'for', skeptic: 'against', skeptic2: 'against', enabler: 'enabler' };
+  var STAGE_BADGE = { advocate: '1', advocate2: '1', skeptic: '2', skeptic2: '2', enabler: '3' };
+  function today() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function liveKey() { return S.cat + '|' + JSON.stringify(slot(S.cat).values) + '|' + S.cur; }
+
+  function detectAI() {
+    var done = function (kind, fn) { S.live.kind = kind; S.live.fn = fn; S.live.checked = true; renderLive(); };
+    if (window.claude && typeof window.claude.use === 'function') {
+      Promise.resolve(window.claude.use('sample')).then(function (s) {
+        if (s) done('claude', s); else done(CFG.aiEndpoint ? 'proxy' : null);
+      }, function () { done(CFG.aiEndpoint ? 'proxy' : null); });
+    } else done(CFG.aiEndpoint ? 'proxy' : null);
+  }
+  function callAgent(stage, cf, transcript, onText, signal) {
+    if (S.live.kind === 'claude') {
+      var prompt = DE.PROMPTS.fullPrompt(stage, cf, transcript, today());
+      return S.live.fn(prompt, { onText: function (e) { onText(e.text); }, signal: signal, modelTier: 'complex', cache: false }).then(function (res) { return res.text; });
+    }
+    return fetch(CFG.aiEndpoint, {
+      method: 'POST', headers: { 'content-type': 'application/json' }, signal: signal,
+      body: JSON.stringify({ stage: stage, caseFile: cf, transcript: transcript, today: today() })
+    }).then(function (res) {
+      if (!res.ok) return res.text().then(function (t) { throw new Error(t || ('Server error ' + res.status)); });
+      if (!res.body || !res.body.getReader) return res.text().then(function (t) { onText(t); return t; });
+      var rd = res.body.getReader(), dec = new TextDecoder(), acc = '';
+      function pump() { return rd.read().then(function (x) { if (x.done) return acc; acc += dec.decode(x.value, { stream: true }); onText(acc); return pump(); }); }
+      return pump();
+    });
+  }
+  function resetLive() {
+    if (S.live.ctrl) S.live.ctrl.abort();
+    S.live.running = false; S.live.turns = []; S.live.stamp = null; S.live.forKey = null; S.live.error = null;
+    renderLive();
+  }
+  function markLiveStale() {
+    var n = document.getElementById('liveStale');
+    if (n) n.hidden = !(S.live.forKey && S.live.forKey !== liveKey());
+  }
+  function renderLive() {
+    var box = $('liveBox'); box.replaceChildren();
+    if (!S.live.checked) { box.append(el('p', 'status', 'Checking whether live AI is available here...')); return; }
+    if (!S.live.kind) {
+      box.append(el('p', null, 'Live AI agents run when you open The Decision Enabler inside Claude, or in the app once its AI service is switched on. The built-in agents above work everywhere and never send your answers anywhere.'));
+      var b0 = el('button', 'primary', 'Run the live AI debate'); b0.type = 'button'; b0.disabled = true;
+      var a0 = el('div', 'actions'); a0.append(b0); box.append(a0);
+      return;
+    }
+    var intro = el('p', null, S.live.kind === 'claude'
+      ? 'Runs on your own Claude account: five short turns (Advocate, Skeptic, two replies, then the Enabler). Claude asks your permission the first time. It takes about a minute.'
+      : 'Five short turns (Advocate, Skeptic, two replies, then the Enabler). The agents may look up facts for your area. It takes a minute or two.');
+    box.append(intro);
+    var consentOk = S.live.kind === 'claude' || LS.get('de-ai-consent', false);
+    var cbox = null;
+    if (S.live.kind === 'proxy') {
+      cbox = el('label', 'consent'); var cb = el('input'); cb.type = 'checkbox'; cb.id = 'aiConsent'; cb.checked = !!LS.get('de-ai-consent', false);
+      cbox.append(cb, el('span', null, 'Send my answers and notes to Claude, an AI model made by Anthropic, to run this debate. They are used only to write the replies and are not stored by this app.'));
+      cb.addEventListener('change', function () { LS.set('de-ai-consent', cb.checked); run.disabled = !cb.checked || S.live.running; });
+      box.append(cbox);
+    }
+    var acts = el('div', 'actions');
+    var run = el('button', 'primary', S.live.turns.length ? 'Run it again' : 'Run the live AI debate'); run.type = 'button';
+    run.disabled = S.live.running || !consentOk;
+    run.addEventListener('click', startLive);
+    acts.append(run);
+    if (S.live.running) { var stop = el('button', 'secondary', 'Stop'); stop.type = 'button'; stop.addEventListener('click', function () { if (S.live.ctrl) S.live.ctrl.abort(); }); acts.append(stop); }
+    box.append(acts);
+    var stale = el('p', 'status', 'Your facts changed since this run. Run it again to update.'); stale.id = 'liveStale'; stale.hidden = true; box.append(stale);
+    if (S.live.error) box.append(el('p', 'status', S.live.error));
+    var turns = el('div', 'turns'); turns.id = 'turns';
+    S.live.turns.forEach(function (t) { turns.append(turnEl(t)); });
+    box.append(turns);
+    markLiveStale();
+  }
+  function turnEl(t) {
+    var side = STAGE_SIDE[t.stage], d = el('div', 'turn ' + t.stage);
+    var sp = el('div', 'spk'); sp.append(el('span', 'badge ' + side, STAGE_BADGE[t.stage]), document.createTextNode(DE.PROMPTS.AGENTS[t.stage].name));
+    var body = el('div', 'body');
+    if (t.text) body.innerHTML = md(t.text.replace(/VERDICT_JSON\s*\{[^}]*\}\s*$/, ''));
+    else { var ty = el('span', 'typing'); ty.append(el('i'), el('i'), el('i')); body.append(ty); }
+    d.append(sp, body);
+    if (t.stage === 'enabler' && S.live.stamp) {
+      var w = DE.VERDICTS[S.live.stamp.verdict];
+      if (w) { var st = el('div', 'stamp ' + S.live.stamp.verdict, w.word); st.style.fontSize = '26px'; var hold = el('div'); hold.append(st); d.insertBefore(hold, body); }
+    }
+    t.node = body;
+    return d;
+  }
+  function startLive() {
+    if (S.live.running) return;
+    var r = S.result, cf = caseFile(r, slot(S.cat).notes);
+    S.live.running = true; S.live.turns = []; S.live.stamp = null; S.live.error = null; S.live.forKey = liveKey();
+    S.live.ctrl = new AbortController();
+    renderLive();
+    var order = DE.PROMPTS.ORDER.slice(), transcript = [];
+    function next() {
+      if (!order.length) { S.live.running = false; renderLive(); toast('The live debate is done'); return; }
+      var stage = order.shift(), t = { stage: stage, text: '' };
+      S.live.turns.push(t);
+      var turns = $('turns'); if (turns) { turns.append(turnEl(t)); }
+      var lastPaint = 0;
+      callAgent(stage, cf, transcript, function (txt) {
+        t.text = txt; var now = Date.now();
+        if (now - lastPaint > 80 && t.node) { lastPaint = now; t.node.innerHTML = md(txt.replace(/VERDICT_JSON[\s\S]*$/, '')); }
+      }, S.live.ctrl.signal).then(function (full) {
+        t.text = full || t.text;
+        transcript.push({ stage: stage, text: t.text });
+        if (stage === 'enabler') {
+          var m = t.text.match(/VERDICT_JSON\s*(\{[^}]*\})/);
+          if (m) { try { S.live.stamp = JSON.parse(m[1]); } catch (e) { S.live.stamp = null; } }
+        }
+        renderLive(); next();
+      }, function (err) {
+        S.live.running = false;
+        var code = err && (err.code || err.name);
+        S.live.error = code === 'AbortError' || code === 'aborted' ? 'Stopped.' :
+          code === 'not_granted' ? 'Live AI was not allowed. You can allow it from this page\'s permissions and try again.' :
+          code === 'rate_limited' ? 'Too many requests right now. Wait a minute and try again.' :
+          'The live debate stopped: ' + ((err && err.message) || 'unknown error') + '.';
+        if (!t.text) S.live.turns.pop();
+        renderLive();
+      });
+    }
+    next();
+  }
+
+  // ------------------------------------------------------------ boot
+  function boot() {
+    var fd = $('factsDate'); fd.textContent = 'Research checked ' + DE.FACTS_CHECKED + ' (US national figures unless a source says otherwise). Use your local numbers where you have them.';
+    renderCurrency();
+    var h = (location.hash || '').slice(1);
+    S.cat = DE.BY_ID[h] ? h : (draft.cat && DE.BY_ID[draft.cat] ? draft.cat : 'home');
+    slot(S.cat);
+    renderPicker(); renderForm(); update(false); renderSavedCount();
+    $('notes').addEventListener('input', function () { slot(S.cat).notes = $('notes').value; saveDraft(); });
+    $('startBtn').addEventListener('click', function () { update(true); $('debate').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }); });
+    $('resetBtn').addEventListener('click', function () { var s = slot(S.cat); s.values = DE.defaults(DE.BY_ID[S.cat]); s.touched = {}; saveDraft(); renderForm(); update(false); toast('Example values restored'); });
+    $('copyBtn').addEventListener('click', copySummary);
+    $('saveBtn').addEventListener('click', saveDecision);
+    $('savedBtn').addEventListener('click', function () { if ($('savedSheet').hidden) openSheet(); else closeSheet(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSheet(); });
+    var lastW = window.innerWidth, rT = null;
+    window.addEventListener('resize', function () {
+      clearTimeout(rT);
+      rT = setTimeout(function () { if (Math.abs(window.innerWidth - lastW) > 40 && S.result) { lastW = window.innerWidth; renderChart(S.result); } }, 200);
+    });
+    window.addEventListener('hashchange', function () { var id = (location.hash || '').slice(1); if (DE.BY_ID[id] && id !== S.cat) selectCat(id, false); });
+    renderLive();
+    detectAI();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+
+<script>if('serviceWorker' in navigator && location.protocol==='https:'){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
+<!-- build 2caa1f9030 -->
+</body>
+</html>
