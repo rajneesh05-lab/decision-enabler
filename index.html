@@ -85,6 +85,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .topbar-in { max-width: 1140px; margin: 0 auto; padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .brand { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 700; font-size: 18px; margin-right: auto; text-decoration: none; color: var(--ink); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 480px) { .topbar-in { flex-wrap: nowrap; gap: 8px; } .brand { font-size: 15.5px; gap: 8px; } .pillbtn { padding: 6px 11px; } .cursel { padding: 5px 6px; } }
+@media (max-width: 430px) { .brand .the { display: none; } }
 .brand svg { flex: none; }
 .pillbtn { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 7px 14px; font-size: 14px; font-weight: 600; display: inline-flex; gap: 8px; align-items: center; }
 .pillbtn:hover { border-color: var(--ink); }
@@ -145,10 +146,36 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .presets { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-size: 13.5px; font-weight: 600; }
 .chip:hover { border-color: var(--ink); }
-.groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; align-items: start; }
-fieldset.grp { margin: 0; border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius); padding: 14px 16px 16px; display: grid; gap: 14px; min-width: 0; }
-fieldset.grp legend { font-family: var(--display); font-weight: 700; font-size: 16px; padding: 0 6px; margin-left: -6px; }
-.field { display: grid; gap: 5px; min-width: 0; }
+/* Each group is a full-width card. Fields sit in rows; every field has three tracks (label, box, hint)
+   shared with its neighbours through subgrid, so boxes line up even when one label wraps. */
+.groups { display: grid; gap: 14px; }
+fieldset.grp { margin: 0; border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius); padding: 16px 18px 2px; min-width: 0; }
+fieldset.grp > legend { float: left; width: 100%; padding: 0; margin: 0 0 14px; font-family: var(--display); font-weight: 700; font-size: 17px; }
+fieldset.grp > legend + * { clear: both; }
+.fgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); column-gap: 22px; }
+.field { display: grid; grid-template-rows: subgrid; grid-row: span 3; row-gap: 6px; min-width: 0; padding-bottom: 16px; align-content: start; }
+.field > label { align-self: end; line-height: 1.35; }
+.field.wide { grid-column: 1 / -1; }
+.acwrap { position: relative; min-width: 0; }
+.aclist { position: absolute; z-index: 40; left: 0; right: 0; top: calc(100% + 4px); background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, .16); list-style: none; margin: 0; padding: 4px; max-height: 300px; overflow: auto; }
+.aclist li { padding: 8px 10px; border-radius: 7px; cursor: pointer; font-size: 15px; }
+.aclist li small { color: var(--muted); font-size: 13.5px; }
+.aclist li[aria-selected="true"], .aclist li:hover { background: var(--enabler-soft); }
+.assume { grid-column: 1 / -1; background: var(--surface-2); border: 1px dashed var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; display: grid; gap: 8px; font-size: 14px; }
+.assume > b { font-family: var(--display); font-size: 15px; }
+.assume ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; }
+.assume li .muted { font-size: 13px; }
+.assume li a { font-size: 13px; font-weight: 600; text-decoration: none; }
+.assume details > summary { cursor: pointer; color: var(--enabler); font-weight: 600; font-size: 13.5px; }
+.assume details .fgrid { margin-top: 12px; }
+.kv2 { width: 100%; border-collapse: collapse; font-size: 14px; }
+.kv2 th, .kv2 td { padding: 8px 4px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; }
+.kv2 td { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.kv2 th:first-child, .kv2 td:first-child { text-align: left; font-family: var(--body); white-space: normal; }
+.kv2 thead th { font-size: 12.5px; font-weight: 700; color: var(--ink); }
+.kv2 tr:last-child td { border-bottom: 0; }
+.kv2 td.good { color: var(--good); }
+.kv2 td.bad { color: var(--bad); }
 .field label { font-size: 14px; font-weight: 600; }
 .field .hint { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
 .field .hint a { font-weight: 600; text-decoration: none; white-space: nowrap; }
@@ -338,7 +365,7 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
   <div class="topbar-in">
     <a class="brand" href="#top" aria-label="The Decision Enabler, back to top">
       <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="14" fill="var(--enabler-soft)"/><path d="M6 17h18" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="12" r="3.2" fill="var(--for)"/><circle cx="22" cy="12" r="3.2" fill="var(--against)"/><path d="M15 9v14" stroke="var(--enabler)" stroke-width="2.4" stroke-linecap="round"/></svg>
-      The Decision Enabler
+      <span><span class="the">The </span>Decision Enabler</span>
     </a>
     <button type="button" class="pillbtn" id="savedBtn" aria-expanded="false" aria-controls="savedSheet" aria-label="My saved decisions">Saved <span class="n" id="savedN">0</span></button>
     <select id="cur" class="cursel" aria-label="Currency"></select>
@@ -372,7 +399,7 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
     <form id="form" class="groups" autocomplete="off" novalidate></form>
     <div class="field">
       <label for="notes">Anything else the agents should know? <span class="muted" style="font-weight:400">(optional, used by the live AI agents)</span></label>
-      <textarea id="notes" class="notes" placeholder="e.g. We are expecting a baby next year. / I could work remotely two days a week."></textarea>
+      <textarea id="notes" class="notes" placeholder="e.g. We are expecting a baby next year. / She also got into the honors program."></textarea>
     </div>
     <div class="actions">
       <button type="button" class="primary" id="startBtn">Start the debate <span aria-hidden="true">&rarr;</span></button>
@@ -402,12 +429,12 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
     <div class="actions">
       <button type="button" class="secondary" id="copyBtn">Copy the summary</button>
       <button type="button" class="secondary" id="saveBtn">Save to My decisions</button>
-      <a class="secondary" href="#live" style="text-decoration:none;color:inherit">Get a live AI second opinion</a>
+      <a class="secondary" href="#live" id="liveLink" hidden style="text-decoration:none;color:inherit">Get a live AI second opinion</a>
     </div>
     <div id="copyFallback" hidden></div>
   </section>
 
-  <section class="step" id="live" aria-labelledby="h-live">
+  <section class="step" id="live" aria-labelledby="h-live" hidden>
     <div class="step-head"><span class="step-n">5</span><h2 id="h-live">Second opinion from live AI agents</h2><p class="sub">Three Claude agents read the same case file and research, debate it in their own words, and give their own call. Use it to test the built-in agents above.</p></div>
     <div class="live" id="liveBox"></div>
   </section>
@@ -471,18 +498,16 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
     cardApr: { t: 'Credit cards that charge interest have averaged above 21% APR in recent Federal Reserve data. Paying one off is a guaranteed return at that rate.', s: 'Federal Reserve G.19', u: 'https://www.federalreserve.gov/releases/g19/current/', d: '2026-11-07' },
     match: { t: 'An employer 401(k) match is often 50% to 100% of what you put in, up to a limit. No market investment reliably beats an instant match.', s: 'Plan design norms', u: '', d: '2026-11-18' },
     emergency: { t: 'Planners commonly suggest 3 to 6 months of essential expenses in an emergency fund before taking on investment risk.', s: 'CFPB; planning norm', u: 'https://www.consumerfinance.gov/an-essential-guide-to-building-an-emergency-fund/', d: '2026-11-18' },
-    // ---------- books ----------
-    kdpRoyalty: { t: 'KDP pays 70% on e-books priced $2.99 to $12.99 in the US (the ceiling rose from $9.99 on July 7, 2026), minus a delivery fee of about $0.15 per MB. Outside that band it pays 35%.', s: 'KDP Help', u: 'https://kdp.amazon.com/en_US/help/topic/G200634560', d: '2026-07-07' },
-    kdpIndia: { t: 'Sales in India, Japan, Brazil and Mexico earn 70% only when the e-book is enrolled in KDP Select.', s: 'KDP Help', u: 'https://kdp.amazon.com/en_US/help/topic/G200634560', d: '2026-11-18' },
-    kplus: { t: 'On Oct 22, 2026 Amazon renamed Kindle Unlimited to Kindle+ and added audiobooks. Books already in KDP Select stay in automatically.', s: 'Written Word Media; 9to5Mac', u: 'https://www.writtenwordmedia.com/kindle-plus-for-authors/', d: '2026-10-22' },
-    kenp: { t: 'Kindle Unlimited (now Kindle+) pays per page read, about $0.0040 to $0.0049 a page in 2026. Amazon does not publish a fixed rate; it changes monthly.', s: 'KENP trackers (Kindlepreneur, Profitable)', u: 'https://kindlepreneur.com/kenp/', d: '2026-06-01' },
-    authorIncome: { t: "In Written Word Media's 2025 survey, 44% of indie authors earned $100 a month or less; 13% earned over $5,000 a month. The often-quoted '250 copies' average has no traceable source.", s: 'Written Word Media 2025; Inkfluence 2026', u: 'https://www.writtenwordmedia.com/2025-indie-author-survey-results-insights-into-self-publishing-for-authors/', d: '2025-06-01' },
-    aiDisclosure: { t: 'KDP requires you to tell it when text, images or translations are AI-generated. AI-assisted editing of your own writing does not need to be declared. The answer is private.', s: 'KDP Content Guidelines', u: 'https://kdp.amazon.com/en_US/help/topic/G200672390', d: '2026-11-18' },
-    copyright: { t: 'The US Copyright Office (2025) says purely AI-generated material cannot be copyrighted; your own writing and creative changes can be.', s: 'US Copyright Office, Copyright and AI Part 2', u: 'https://www.copyright.gov/ai/', d: '2025-01-29' },
-    preorder: { t: 'KDP lets you list an e-book for pre-order up to a year ahead. You can upload a draft and swap in the final file until 72 hours before release.', s: 'KDP Help', u: 'https://kdp.amazon.com/en_US/help/topic/G201499380', d: '2026-11-18' },
-    theo: { t: 'Theo of Golden, a self-published inspirational novel (2023), sold over 170,000 copies mostly by word of mouth and book clubs before Simon & Schuster bought it in 2025. It is reported as the best-selling print book in the US in 2026 so far.', s: 'IngramSpark; Deseret News (citing Deadline)', u: 'https://www.deseret.com/entertainment/2026/08/21/he-self-published-a-novel-late-in-the-game-now-its-the-biggest-book-in-the-us-and-tom-hanks-might-star-in-the-movie/', d: '2026-08-21' },
-    kdpEnforce: { t: 'Author-services sites report that KDP stepped up enforcement in 2026 against undisclosed AI content, sometimes acting on the whole account. Disclosed AI content is allowed. (Not confirmed by Amazon.)', s: 'ScribeCount; Written Word Media', u: 'https://www.writtenwordmedia.com/kdp-account-health/', d: '2026-04-30' },
-    bowker: { t: 'About 3.5 million self-published titles got US ISBNs in 2025, before counting e-books with no ISBN.', s: 'Bowker via Publishers Weekly', u: 'https://www.inkfluenceai.com/self-publishing-statistics', d: '2026-01-01' },
+    // ---------- college ----------
+    collegePrices: { t: 'Average published tuition and fees for 2026-27: $12,290 at public 4-year colleges in-state, $32,730 out-of-state, $46,350 at private nonprofits and $4,210 at community colleges. Housing and food add about $13,900 to $15,920 a year.', s: 'College Board, Trends in College Pricing 2026', u: 'https://newsroom.collegeboard.org/average-sticker-prices-public-colleges-rise-less-inflation-grant-aid-brings-average-net-tuition', d: '2026-10-28' },
+    collegeNet: { t: 'After grants, the average full cost for 2026-27 is about $16,230 a year at community colleges, $21,660 at public 4-year in-state and $38,540 at private nonprofits.', s: 'College Board, Trends in College Pricing 2026', u: 'https://newsroom.collegeboard.org/average-sticker-prices-public-colleges-rise-less-inflation-grant-aid-brings-average-net-tuition', d: '2026-10-28' },
+    fedRate: { t: 'Federal undergraduate student loans first paid out from July 1, 2026 to June 30, 2027 carry a fixed 6.52% rate (Parent PLUS 9.07%), plus a 1.057% fee.', s: 'Federal Student Aid, GENERAL-26-33', u: 'https://fsapartners.ed.gov/knowledge-center/library/electronic-announcements/2026-06-04/interest-rates-federal-direct-loans-first-disbursed-between-july-1-2026-and-june-30-2027', d: '2026-06-04' },
+    plusRules: { t: 'Dependent students can borrow up to $31,000 in federal loans for a bachelor\'s degree. Since July 1, 2026 Parent PLUS loans are capped at $20,000 a year and $65,000 per student, and new repayment plans replaced the old ones.', s: 'States Newsroom; Federal Student Aid', u: 'https://missouriindependent.com/2026/05/08/repub/big-changes-arrive-july-1-for-student-borrowers-including-in-loan-repayments/', d: '2026-05-08' },
+    blsPay: { t: 'In 2025, full-time workers 25 and older with a bachelor\'s degree earned a median $1,578 a week (2.8% unemployment), against $1,135 with an associate degree and $966 with a high school diploma (4.3%).', s: 'US Bureau of Labor Statistics, Education pays 2025', u: 'https://www.bls.gov/careeroutlook/2026/data-on-display/education-pays.htm', d: '2026-09-01' },
+    nscCompletion: { t: 'Nationally, 61.1% of students who started college in fall 2019 finished a credential within six years.', s: 'National Student Clearinghouse Research Center', u: 'https://nscresearchcenter.org/yearly-progress-and-completion/', d: '2025-12-04' },
+    nyfed: { t: 'Recent college graduates had 5.2% unemployment in Q3 2026, and 42.5% worked in jobs that do not need a degree.', s: 'Federal Reserve Bank of New York', u: 'https://www.newyorkfed.org/research/college-labor-market', d: '2026-11-10' },
+    debtRule: { t: 'A common guideline: keep total borrowing for a degree under the expected first-year salary, and loan payments under about 10% of gross pay.', s: 'Financial aid planning guideline', u: '', d: '2026-11-18' },
+    scorecard: { t: 'College Scorecard shows each college\'s graduation rate, typical debt and graduates\' earnings by program, from federal data.', s: 'US Department of Education, College Scorecard', u: 'https://collegescorecard.ed.gov/', d: '2026-11-18' },
     // ---------- any decision ----------
     twoWay: { t: 'Reversible ("two-way door") decisions can be made fast and fixed later; one-way doors deserve slow, careful thought.', s: 'Jeff Bezos, Amazon letter to shareholders (2015)', u: 'https://www.aboutamazon.com/news/company-news/2015-letter-to-shareholders', d: '2016-04-05' },
     regret: { t: 'Over the long run people tend to regret the things they did not do more than the things they did.', s: 'Gilovich & Medvec, Psychological Review (1995)', u: 'https://doi.org/10.1037/0033-295X.102.2.379', d: '1995-04-01' },
@@ -492,6 +517,96 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
   var api = { FACTS: F, FACTS_CHECKED: FACTS_CHECKED };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else { root.DE = root.DE || {}; root.DE.FACTS = F; root.DE.FACTS_CHECKED = FACTS_CHECKED; }
+})(typeof window !== 'undefined' ? window : this);
+</script>
+<script>/* Places for the city boxes: "City, State" for the US and "City, State, India" for India.
+   Free text still works for anywhere not listed. ASCII-only. */
+(function (root) {
+  'use strict';
+  var US = {
+    'Alabama': 'Birmingham|Montgomery|Huntsville|Mobile|Tuscaloosa|Hoover|Auburn|Dothan|Decatur|Madison',
+    'Alaska': 'Anchorage|Fairbanks|Juneau|Wasilla',
+    'Arizona': 'Phoenix|Tucson|Mesa|Chandler|Gilbert|Glendale|Scottsdale|Peoria|Tempe|Surprise|Flagstaff|Yuma|Goodyear|Buckeye',
+    'Arkansas': 'Little Rock|Fayetteville|Fort Smith|Springdale|Jonesboro|Rogers|Conway|Bentonville',
+    'California': 'Los Angeles|San Diego|San Jose|San Francisco|Fresno|Sacramento|Long Beach|Oakland|Bakersfield|Anaheim|Santa Ana|Riverside|Stockton|Irvine|Chula Vista|Fremont|San Bernardino|Modesto|Fontana|Santa Clarita|Glendale|Huntington Beach|Ontario|Elk Grove|Santa Rosa|Rancho Cucamonga|Oxnard|Pasadena|Sunnyvale|Santa Clara|Palo Alto|Mountain View|Cupertino|Berkeley|San Mateo|Pleasanton|Walnut Creek|Roseville|Folsom|Torrance|Pomona|Escondido|Carlsbad|Temecula|Santa Barbara|San Luis Obispo|Monterey|Redding|Chico|Davis|Dublin|San Ramon|Milpitas',
+    'Colorado': 'Denver|Colorado Springs|Aurora|Fort Collins|Lakewood|Thornton|Arvada|Westminster|Pueblo|Boulder|Greeley|Longmont|Loveland|Castle Rock|Parker|Highlands Ranch|Grand Junction',
+    'Connecticut': 'Bridgeport|New Haven|Stamford|Hartford|Waterbury|Norwalk|Danbury|Greenwich|West Hartford',
+    'Delaware': 'Wilmington|Dover|Newark|Middletown',
+    'District of Columbia': 'Washington',
+    'Florida': 'Jacksonville|Miami|Tampa|Orlando|St. Petersburg|Hialeah|Tallahassee|Fort Lauderdale|Port St. Lucie|Cape Coral|Pembroke Pines|Hollywood|Gainesville|Miramar|Coral Springs|Clearwater|Palm Bay|West Palm Beach|Lakeland|Boca Raton|Naples|Sarasota|Fort Myers|Pensacola|Daytona Beach|Kissimmee|Ocala|Melbourne|Delray Beach|Jupiter',
+    'Georgia': 'Atlanta|Augusta|Columbus|Macon|Savannah|Athens|Sandy Springs|Roswell|Johns Creek|Alpharetta|Marietta|Smyrna|Duluth|Lawrenceville|Valdosta|Cumming|Peachtree City',
+    'Hawaii': 'Honolulu|Hilo|Kailua|Pearl City|Kahului',
+    'Idaho': "Boise|Meridian|Nampa|Idaho Falls|Pocatello|Caldwell|Coeur d'Alene|Twin Falls",
+    'Illinois': 'Chicago|Aurora|Naperville|Joliet|Rockford|Springfield|Elgin|Peoria|Champaign|Bloomington|Schaumburg|Evanston|Arlington Heights|Bolingbrook|Palatine|Skokie|Oak Park|Downers Grove|Wheaton|Plainfield|Normal|Urbana',
+    'Indiana': 'Indianapolis|Fort Wayne|Evansville|South Bend|Carmel|Fishers|Bloomington|Hammond|Lafayette|West Lafayette|Noblesville|Muncie|Westfield|Zionsville',
+    'Iowa': 'Des Moines|Cedar Rapids|Davenport|Sioux City|Iowa City|Ankeny|West Des Moines|Ames|Waterloo|Council Bluffs|Urbandale|Cedar Falls|Dubuque|Marion|Waukee|Bettendorf|Johnston|Clive|Grimes|Altoona|Norwalk|Indianola|Mason City|Coralville|North Liberty|Pella|Newton|Ottumwa|Fort Dodge|Burlington|Muscatine|Adel|Boone',
+    'Kansas': 'Wichita|Overland Park|Kansas City|Olathe|Topeka|Lawrence|Shawnee|Manhattan|Lenexa|Salina|Leawood',
+    'Kentucky': 'Louisville|Lexington|Bowling Green|Owensboro|Covington|Richmond|Georgetown|Florence|Frankfort',
+    'Louisiana': 'New Orleans|Baton Rouge|Shreveport|Lafayette|Lake Charles|Kenner|Bossier City|Monroe|Metairie',
+    'Maine': 'Portland|Lewiston|Bangor|South Portland|Augusta',
+    'Maryland': 'Baltimore|Columbia|Germantown|Silver Spring|Frederick|Rockville|Gaithersburg|Bethesda|Annapolis|Towson|Ellicott City|Bowie',
+    'Massachusetts': 'Boston|Worcester|Springfield|Cambridge|Lowell|Brockton|Quincy|Lynn|Newton|Somerville|Framingham|Waltham|Lexington|Plymouth',
+    'Michigan': 'Detroit|Grand Rapids|Warren|Sterling Heights|Ann Arbor|Lansing|Dearborn|Livonia|Troy|Farmington Hills|Kalamazoo|Novi|Rochester Hills|Southfield|Flint|East Lansing|Traverse City',
+    'Minnesota': 'Minneapolis|Saint Paul|Rochester|Duluth|Bloomington|Brooklyn Park|Plymouth|Maple Grove|Woodbury|St. Cloud|Eagan|Eden Prairie|Edina|Lakeville|Minnetonka|Mankato',
+    'Mississippi': 'Jackson|Gulfport|Southaven|Hattiesburg|Biloxi|Olive Branch|Tupelo|Oxford',
+    'Missouri': "Kansas City|St. Louis|Springfield|Columbia|Independence|Lee's Summit|O'Fallon|St. Joseph|St. Charles|Chesterfield|Jefferson City|Joplin",
+    'Montana': 'Billings|Missoula|Great Falls|Bozeman|Butte|Helena|Kalispell',
+    'Nebraska': 'Omaha|Lincoln|Bellevue|Grand Island|Kearney|Papillion',
+    'Nevada': 'Las Vegas|Henderson|Reno|North Las Vegas|Sparks|Carson City',
+    'New Hampshire': 'Manchester|Nashua|Concord|Dover|Portsmouth',
+    'New Jersey': 'Newark|Jersey City|Paterson|Elizabeth|Edison|Woodbridge|Toms River|Hamilton|Trenton|Clifton|Camden|Cherry Hill|Princeton|Hoboken|Morristown|New Brunswick|Hackensack',
+    'New Mexico': 'Albuquerque|Las Cruces|Rio Rancho|Santa Fe|Roswell|Farmington',
+    'New York': 'New York City|Brooklyn|Queens|Manhattan|The Bronx|Staten Island|Buffalo|Rochester|Yonkers|Syracuse|Albany|New Rochelle|Mount Vernon|Schenectady|Utica|White Plains|Ithaca|Binghamton|Saratoga Springs',
+    'North Carolina': 'Charlotte|Raleigh|Greensboro|Durham|Winston-Salem|Fayetteville|Cary|Wilmington|High Point|Concord|Asheville|Chapel Hill|Apex|Huntersville|Mooresville|Morrisville',
+    'North Dakota': 'Fargo|Bismarck|Grand Forks|Minot|West Fargo',
+    'Ohio': 'Columbus|Cleveland|Cincinnati|Toledo|Akron|Dayton|Parma|Canton|Youngstown|Dublin|Westerville|Mason|Lorain|Hamilton|Kettering|Athens',
+    'Oklahoma': 'Oklahoma City|Tulsa|Norman|Broken Arrow|Edmond|Lawton|Moore|Stillwater',
+    'Oregon': 'Portland|Salem|Eugene|Gresham|Hillsboro|Beaverton|Bend|Medford|Corvallis|Lake Oswego',
+    'Pennsylvania': 'Philadelphia|Pittsburgh|Allentown|Erie|Reading|Scranton|Bethlehem|Lancaster|Harrisburg|State College|York|Wilkes-Barre|King of Prussia',
+    'Rhode Island': 'Providence|Warwick|Cranston|Pawtucket|Newport',
+    'South Carolina': 'Charleston|Columbia|North Charleston|Mount Pleasant|Rock Hill|Greenville|Summerville|Spartanburg|Myrtle Beach|Hilton Head Island',
+    'South Dakota': 'Sioux Falls|Rapid City|Aberdeen|Brookings',
+    'Tennessee': 'Nashville|Memphis|Knoxville|Chattanooga|Clarksville|Murfreesboro|Franklin|Jackson|Johnson City|Brentwood|Hendersonville',
+    'Texas': 'Houston|San Antonio|Dallas|Austin|Fort Worth|El Paso|Arlington|Corpus Christi|Plano|Laredo|Lubbock|Irving|Garland|Frisco|McKinney|Amarillo|Grand Prairie|Brownsville|Killeen|Pasadena|Denton|Midland|Waco|Round Rock|Sugar Land|The Woodlands|Katy|Richardson|Allen|College Station|Tyler|Odessa|League City|Pearland|Cedar Park|Georgetown|San Marcos|Abilene|Beaumont|Conroe|Lewisville|Flower Mound',
+    'Utah': 'Salt Lake City|West Valley City|Provo|West Jordan|Orem|Sandy|St. George|Ogden|Layton|Lehi|South Jordan|Logan|Draper',
+    'Vermont': 'Burlington|South Burlington|Rutland|Montpelier',
+    'Virginia': 'Virginia Beach|Chesapeake|Norfolk|Arlington|Richmond|Newport News|Alexandria|Hampton|Roanoke|Lynchburg|Charlottesville|Fairfax|Reston|Herndon|Ashburn|Leesburg|Blacksburg|Harrisonburg|Williamsburg',
+    'Washington': 'Seattle|Spokane|Tacoma|Vancouver|Bellevue|Kent|Everett|Renton|Redmond|Kirkland|Bothell|Olympia|Bellingham|Kennewick|Yakima|Sammamish|Issaquah|Pullman',
+    'West Virginia': 'Charleston|Huntington|Morgantown|Parkersburg|Wheeling',
+    'Wisconsin': 'Milwaukee|Madison|Green Bay|Kenosha|Racine|Appleton|Waukesha|Eau Claire|Oshkosh|La Crosse|Brookfield',
+    'Wyoming': 'Cheyenne|Casper|Laramie|Gillette|Jackson'
+  };
+  var INDIA = {
+    'Maharashtra': 'Mumbai|Pune|Nagpur|Nashik|Thane|Navi Mumbai|Chhatrapati Sambhajinagar|Solapur|Kolhapur',
+    'Karnataka': 'Bengaluru|Mysuru|Mangaluru|Hubballi|Belagavi',
+    'Tamil Nadu': 'Chennai|Coimbatore|Madurai|Tiruchirappalli|Salem|Tirunelveli|Vellore',
+    'Telangana': 'Hyderabad|Warangal',
+    'Andhra Pradesh': 'Visakhapatnam|Vijayawada|Guntur|Tirupati|Nellore',
+    'Kerala': 'Kochi|Thiruvananthapuram|Kozhikode|Thrissur',
+    'Delhi': 'New Delhi|Delhi',
+    'Haryana': 'Gurugram|Faridabad|Panipat',
+    'Uttar Pradesh': 'Noida|Lucknow|Kanpur|Ghaziabad|Agra|Varanasi|Prayagraj|Meerut',
+    'Gujarat': 'Ahmedabad|Surat|Vadodara|Rajkot|Gandhinagar',
+    'Rajasthan': 'Jaipur|Jodhpur|Udaipur|Kota|Ajmer',
+    'West Bengal': 'Kolkata|Howrah|Siliguri|Durgapur',
+    'Madhya Pradesh': 'Indore|Bhopal|Gwalior|Jabalpur',
+    'Punjab': 'Ludhiana|Amritsar|Jalandhar|Mohali',
+    'Chandigarh': 'Chandigarh',
+    'Bihar': 'Patna|Gaya',
+    'Odisha': 'Bhubaneswar|Cuttack',
+    'Jharkhand': 'Ranchi|Jamshedpur',
+    'Goa': 'Panaji|Margao',
+    'Assam': 'Guwahati',
+    'Uttarakhand': 'Dehradun',
+    'Chhattisgarh': 'Raipur',
+    'Himachal Pradesh': 'Shimla',
+    'Jammu and Kashmir': 'Srinagar|Jammu'
+  };
+  var list = [];
+  Object.keys(US).forEach(function (st) { US[st].split('|').forEach(function (c) { list.push(c + ', ' + st); }); });
+  Object.keys(INDIA).forEach(function (st) { INDIA[st].split('|').forEach(function (c) { list.push(c + ', ' + st + ', India'); }); });
+  if (typeof module !== 'undefined' && module.exports) module.exports = list;
+  else { root.DE = root.DE || {}; root.DE.PLACES = list; }
 })(typeof window !== 'undefined' ? window : this);
 </script>
 <script>/* The Decision Enabler - engine.
@@ -530,6 +645,7 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
   function plural(n, one, many) { return n === 1 ? one : many; }
   function yrs(n) { n = Math.round(n * 10) / 10; return n + ' ' + plural(n, 'year', 'years'); }
   function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
+  function stayWords(n) { return n >= 30 ? 'for the long term (we use 30 years)' : 'about ' + yrs(n); }
 
   // ---------------------------------------------------------------- finance math
   function pmt(principal, ratePct, years) {
@@ -641,14 +757,14 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
       { t: 'The home', f: [
         { id: 'price', l: 'Home price', type: 'money', def: 250000, step: 1000, src: 'medianHome', h: 'US median existing home: $416,700 (Oct 2026).' },
         { id: 'down', l: 'Down payment (cash up front)', type: 'money', def: 10000, step: 500, src: 'minDown', h: '3% is the floor for most conventional loans; 3.5% for FHA.' },
-        { id: 'closingPct', l: 'Closing costs', type: 'pct', def: 3, step: 0.1, src: 'closing', h: 'About 1% before lender fees; 2% to 5% with them.' },
-        { id: 'place', l: 'City or area', type: 'text', def: '', ph: 'e.g. Waukee, Iowa', opt: true, h: 'Optional. The live AI agents use it to look at your local market.' }
+        { id: 'closingPct', sl: 'Closing costs come to about {v} of the price', l: 'Closing costs (share of the price)', type: 'pct', def: 3, step: 0.1, src: 'closing', adv: true, h: 'About 1% before lender fees; 2% to 5% with them.' },
+        { id: 'place', l: 'City', type: 'text', def: '', ph: 'Start typing, e.g. Waukee', opt: true, ac: 'place', h: 'Pick from the list to add the state.' }
       ] },
       { t: 'The loan', f: [
         { id: 'years', l: 'Loan length', type: 'select', def: '30', options: [['10', '10 years'], ['15', '15 years'], ['20', '20 years'], ['25', '25 years'], ['30', '30 years']], h: 'Changing this fills in a typical rate unless you typed your own.' },
         { id: 'rate', l: 'Interest rate', type: 'pct', def: 7.11, step: 0.01, src: 'rate30', h: 'Freddie Mac, Nov 12 2026: 7.11% (30 yr), 6.45% (15 yr). Other lengths are estimates. Use your lender quote if you have one.' },
         { id: 'credit', l: 'Credit score', type: 'select', def: '700', options: [['760', '760 or higher'], ['700', '700 to 759'], ['640', '640 to 699'], ['580', '580 to 639'], ['500', 'Below 580']] },
-        { id: 'pmiPct', l: 'Mortgage insurance (PMI) per year', type: 'pct', def: 0.6, step: 0.05, src: 'pmi', h: 'About 0.36% to 0.84% of the loan a year when you put down under 20%.' }
+        { id: 'pmiPct', sl: 'Mortgage insurance (PMI), while you have under 20% equity, costs {v} of the loan a year', l: 'Mortgage insurance (PMI) per year', type: 'pct', def: 0.6, step: 0.05, src: 'pmi', adv: true, h: 'About 0.36% to 0.84% of the loan a year when you put down under 20%.' }
       ] },
       { t: 'Your money', f: [
         { id: 'income', l: 'Household income before tax, per month', type: 'money', def: 7500, step: 100 },
@@ -660,16 +776,16 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
         { id: 'taxPct', l: 'Property tax per year', type: 'pct', def: 1.0, step: 0.05, src: 'propTax', h: 'As a share of the price. Look up your county rate.' },
         { id: 'insurance', l: 'Home insurance per year', type: 'money', def: 2400, step: 50, src: 'insurance' },
         { id: 'hoa', l: 'HOA fee per month', type: 'money', def: 0, step: 10 },
-        { id: 'maintPct', l: 'Upkeep per year', type: 'pct', def: 1.5, step: 0.1, src: 'upkeep', h: '1% to 4% of the home value a year.' }
+        { id: 'maintPct', sl: 'Upkeep and repairs cost {v} of the home value a year', l: 'Upkeep per year', type: 'pct', def: 1.5, step: 0.1, src: 'upkeep', adv: true, h: '1% to 4% of the home value a year.' }
       ] },
-      { t: 'Your plans and the outlook', f: [
-        { id: 'stay', l: 'Years you expect to live there', type: 'num', unit: 'years', def: 7, step: 1, min: 1, max: 30 },
+      { t: 'Your plans', f: [
+        { id: 'stay', l: 'How long do you expect to live there?', type: 'select', num: true, def: 8, options: [['2', '1 to 2 years'], ['4', '3 to 4 years'], ['6', '5 to 6 years'], ['8', '7 to 9 years'], ['12', '10 to 14 years'], ['20', '15 to 24 years'], ['30', 'Long term, no plans to sell']], assume: ['growth', 'rentGrowth', 'invest', 'sellPct', 'closingPct', 'pmiPct', 'maintPct'] },
         { id: 'job', l: 'How steady is your income?', type: 'select', def: 'normal', options: [['stable', 'Very steady'], ['normal', 'Normal'], ['shaky', 'Could change soon']] },
         { id: 'matters', l: 'How much does owning matter to you?', type: 'select', def: 'some', options: [['much', 'A lot'], ['some', 'Somewhat'], ['little', 'Not much']] },
-        { id: 'growth', l: 'Home value growth per year', type: 'pct', def: 2, step: 0.25, src: 'medianHome', h: 'US prices rose 0.4% in the last year; the long-run average is higher. 2% is a middle guess.' },
-        { id: 'rentGrowth', l: 'Rent growth per year', type: 'pct', def: 2, step: 0.25, src: 'rent' },
-        { id: 'invest', l: 'Return on money you invest instead', type: 'pct', def: 5, step: 0.25, src: 'vanguard', h: 'Savings accounts pay about 4.2%; Vanguard expects 4.8% to 6.8% from US stocks.' },
-        { id: 'sellPct', l: 'Cost to sell later', type: 'pct', def: 7, step: 0.5, src: 'sellCost' }
+        { id: 'growth', sl: 'Home values grow {v} a year', l: 'Home values grow each year by', type: 'pct', def: 2, step: 0.25, src: 'medianHome', adv: true, h: 'US prices rose 0.4% in the last year; the long-run average is higher. 2% is a middle estimate.' },
+        { id: 'rentGrowth', sl: 'Rents grow {v} a year', l: 'Rents grow each year by', type: 'pct', def: 2, step: 0.25, src: 'rent', adv: true, h: 'US rents fell 0.4% in the last year; over time they track inflation.' },
+        { id: 'invest', sl: 'Money you do not put into the home earns {v} a year', l: 'Money you do not put into the home earns', type: 'pct', def: 5, step: 0.25, src: 'vanguard', adv: true, h: 'Savings accounts pay about 4.2%; Vanguard expects 4.8% to 6.8% a year from US stocks.' },
+        { id: 'sellPct', sl: 'Selling the home later costs {v} of the price', l: 'Selling the home later costs', type: 'pct', def: 7, step: 0.5, src: 'sellCost', adv: true, h: 'Agent fees, transfer taxes and repairs: 6% to 10% of the price.' }
       ] }
     ],
     linked: function (changedId, v, touched) {
@@ -681,7 +797,7 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
       var out = [];
       var stay = m.stay;
       // ---- for
-      if (m.be !== null && m.be <= stay) out.push(P('for', 'cost', m.advStay > m.price * 0.05 ? 5 : 4, 'Buying wins over your time frame', 'If you stay ' + yrs(stay) + ', buying ends about ' + money(m.advStay) + ' ahead of renting and investing the difference. It pulls ahead in year ' + m.be + '.', 'rate30'));
+      if (m.be !== null && m.be <= stay) out.push(P('for', 'cost', m.advStay > m.price * 0.05 ? 5 : 4, 'Buying wins over your time frame', 'If you stay ' + stayWords(stay) + ', buying ends about ' + money(m.advStay) + ' ahead of renting and investing the difference. It pulls ahead in year ' + m.be + '.', 'rate30'));
       else if (m.be !== null) out.push(P('for', 'cost', 2, 'Buying wins if you stay longer', 'On these numbers buying pulls ahead in year ' + m.be + '. If your plans stretch that far, the math turns your way.', 'sellCost'));
       if (m.saleStay > 0) out.push(P('for', 'cost', 2, 'You build something you own', 'After ' + yrs(stay) + ' you would walk away with about ' + money(m.saleStay) + ' from a sale, after paying off the loan and selling costs.', 'sellCost'));
       if (m.allIn <= v.rent * 1.1) out.push(P('for', 'afford', 4, 'Owning costs about the same as renting', 'All-in, owning costs ' + money(m.allIn) + ' a month against ' + money(v.rent) + ' rent, and part of each loan payment pays down what you owe.', 'rent'));
@@ -694,9 +810,9 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
       if (m.cushion >= 6) out.push(P('for', 'cash', 3, 'A strong safety net', 'After buying you would still have ' + m.cushion.toFixed(1) + ' months of housing and debt payments saved.', 'emergency'));
       if (v.job === 'stable') out.push(P('for', 'life', 2, 'Your income is steady', 'A steady income is what a 30-year promise needs most.', null));
       if (v.matters === 'much') out.push(P('for', 'life', 3, 'Owning matters to you', 'Roots, stability and freedom to change the place are real benefits, even though they do not show in the math.', 'regret'));
-      if (stay >= 10) out.push(P('for', 'life', 2, 'You plan to stay a long time', 'Over ' + yrs(stay) + ', the one-time costs of buying and selling are spread thin.', 'sellCost'));
+      if (stay >= 10) out.push(P('for', 'life', stay >= 30 ? 3 : 2, 'You plan to stay a long time', 'Over ' + stayWords(stay) + ', the one-time costs of buying and selling are spread thin.', 'sellCost'));
       // ---- against
-      if (m.be === null || m.be > stay) out.push(P('against', 'cost', 5, 'Renting wins over your time frame', 'If you sell after ' + yrs(stay) + ', you would be about ' + money(-m.advStay) + ' behind someone who rented and invested the difference.' + (m.be ? ' Buying only pulls ahead in year ' + m.be + '.' : ' On these numbers buying never pulls ahead within 30 years.'), 'sellCost'));
+      if (m.be === null || m.be > stay) out.push(P('against', 'cost', 5, 'Renting wins over your time frame', 'If you sell after ' + stayWords(stay) + ', you would be about ' + money(-m.advStay) + ' behind someone who rented and invested the difference.' + (m.be ? ' Buying only pulls ahead in year ' + m.be + '.' : ' On these numbers buying never pulls ahead within 30 years.'), 'sellCost'));
       if (stay <= 4) out.push(P('against', 'cost', 4, 'Short stays are expensive', 'Buying and selling within ' + yrs(stay) + ' costs about ' + money(m.closing + m.price * v.sellPct / 100) + ' in fees alone.', 'closing'));
       if (m.allIn > v.rent * 1.2) out.push(P('against', 'afford', m.allIn > v.rent * 1.5 ? 4 : 3, 'Owning costs much more each month', 'Owning would cost ' + money(m.allIn) + ' a month all-in (loan, tax, insurance, upkeep' + (m.pmiM ? ', PMI' : '') + '), ' + money(m.allIn - v.rent) + ' more than rent.', 'insurance'));
       if (m.front > 28 || m.back > 36) out.push(P('against', 'afford', m.back > 43 ? 5 : 4, 'The payment stretches your income', 'Housing would take ' + pct(m.front, 1) + ' of gross income and all debts ' + pct(m.back, 1) + '. Planners aim for 28% and 36%.', 'dti'));
@@ -747,7 +863,7 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
         { l: 'Cash needed at closing', v: money(m.cashNeeded), n: money(m.down) + ' down + ' + money(m.closing) + ' closing' },
         { l: 'Debt-to-income', v: pct(m.back, 1), tone: m.back <= 36 ? 'good' : m.back <= 43 ? 'warn' : 'bad' },
         { l: 'Break-even vs renting', v: m.be ? 'Year ' + m.be : 'Not in 30 years', tone: (m.be && m.be <= m.stay) ? 'good' : 'bad' },
-        { l: 'After ' + yrs(m.stay), v: (m.advStay >= 0 ? 'Buying ahead ' : 'Renting ahead ') + money(Math.abs(m.advStay)), tone: m.advStay >= 0 ? 'good' : 'bad' },
+        { l: m.stay >= 30 ? 'After 30 years (long term)' : 'After ' + yrs(m.stay), v: (m.advStay >= 0 ? 'Buying ahead ' : 'Renting ahead ') + money(Math.abs(m.advStay)), tone: m.advStay >= 0 ? 'good' : 'bad' },
         { l: 'Total interest over the loan', v: money(m.totalInterest) }
       ];
     },
@@ -811,7 +927,7 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
         { id: 'down', l: 'Down payment, including trade-in', type: 'money', def: 5000, step: 250 },
         { id: 'apr', l: 'Loan interest rate (APR)', type: 'pct', def: 7.0, step: 0.1, src: 'carApr', h: 'Average 7.0% new, 10.6% used (Q3 2026). Credit unions often beat dealers.' },
         { id: 'term', l: 'Loan length', type: 'select', def: '5', options: [['3', '3 years'], ['4', '4 years'], ['5', '5 years'], ['6', '6 years'], ['7', '7 years']] },
-        { id: 'keep', l: 'Years you will keep it', type: 'num', unit: 'years', def: 7, step: 1, min: 1, max: 15 }
+        { id: 'keep', l: 'How long will you keep it?', type: 'select', num: true, def: 7, options: [['3', 'About 3 years'], ['5', 'About 5 years'], ['7', 'About 7 years'], ['10', 'About 10 years'], ['15', 'Until it wears out']] }
       ] },
       { t: 'Your money', f: [
         { id: 'income', l: 'Income before tax, per month', type: 'money', def: 6500, step: 100 },
@@ -925,8 +1041,8 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
     topics: { money: 'Money each month', work: 'Work and income', people: 'People and family', fit: 'Knowing the place', cash: 'Cost of the move' },
     groups: [
       { t: 'The move', f: [
-        { id: 'from', l: 'Where you live now', type: 'text', def: '', ph: 'e.g. Des Moines, Iowa', opt: true },
-        { id: 'to', l: 'Where you might move', type: 'text', def: '', ph: 'e.g. Austin, Texas', opt: true },
+        { id: 'from', l: 'Where you live now', type: 'text', def: '', ph: 'Start typing, e.g. Des Moines', opt: true, ac: 'place' },
+        { id: 'to', l: 'Where you might move', type: 'text', def: '', ph: 'Start typing, e.g. Austin', opt: true, ac: 'place' },
         { id: 'household', l: 'Who is moving?', type: 'select', def: 'single', options: [['single', 'Just me'], ['couple', 'Me and a partner'], ['family', 'Family with children']] },
         { id: 'reason', l: 'Main reason', type: 'select', def: 'career', options: [['career', 'Career'], ['cost', 'Lower cost of living'], ['family', 'Be near family'], ['life', 'Lifestyle or climate'], ['fresh', 'A fresh start']] },
         { id: 'know', l: 'How well do you know the place?', type: 'select', def: 'once', options: [['lived', 'I have lived there'], ['many', 'Visited several times'], ['once', 'Visited once'], ['never', 'Never been']] }
@@ -945,14 +1061,14 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
         { id: 'partner', l: 'Your partner\'s work', type: 'select', def: 'na', options: [['na', 'Not applicable'], ['set', 'Has work there, or remote'], ['search', 'Will need to find work']] },
         { id: 'people', l: 'Family and friends there', type: 'select', def: 'fewer', options: [['more', 'More than here'], ['same', 'About the same'], ['fewer', 'Fewer; starting over']] },
         { id: 'school', l: 'Would children change schools?', type: 'select', def: 'no', options: YESNO },
-        { id: 'stay', l: 'Years you expect to stay there', type: 'num', unit: 'years', def: 5, step: 1, min: 1, max: 30 }
+        { id: 'stay', l: 'How long do you expect to stay there?', type: 'select', num: true, def: 4, options: [['2', '1 to 2 years'], ['4', '3 to 5 years'], ['7', '6 to 9 years'], ['12', '10 years or more'], ['25', 'For good, no plans to move back']] }
       ] }
     ],
     model: moveModel,
     argue: function (v, m) {
       var out = [];
       if (m.delta > 0) out.push(P('for', 'money', m.payback <= 12 ? 4 : 3, 'You keep more each month', 'You would have ' + money(m.delta) + ' more left over each month (' + money(m.sNew) + ' against ' + money(m.sNow) + '). The move pays for itself in about ' + Math.ceil(m.payback) + ' months.', 'colIndex'));
-      if (m.total > 0) out.push(P('for', 'cash', 3, 'It pays off over your stay', 'Over ' + yrs(m.stay) + ' you come out about ' + money(m.total) + ' ahead, after paying for the move.', 'moveCost'));
+      if (m.total > 0) out.push(P('for', 'cash', 3, 'It pays off over your stay', 'Over ' + (m.stay >= 25 ? 'the long run (we count 25 years)' : yrs(m.stay)) + ' you come out about ' + money(m.total) + ' ahead, after paying for the move.', 'moveCost'));
       if (m.afterMonths >= 3) out.push(P('for', 'cash', 2, 'You can afford the move', 'After moving you still have ' + money(m.after) + ', about ' + m.afterMonths.toFixed(1) + ' months of costs there.', 'emergency'));
       if (v.job === 'offer') out.push(P('for', 'work', v.reason === 'career' ? 4 : 3, 'A real job is waiting', 'You have a signed offer. Raises and later jobs build on the salary you move up to.', null));
       if (v.job === 'remote') out.push(P('for', 'work', 3, 'Your income comes with you', 'Your remote job moves with you, so the main money risk of a move is gone.', 'remoteMoves'));
@@ -1127,139 +1243,229 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
     }
   };
 
-  // ================================================================ 5. PUBLISH A BOOK
-  var GENRE_PULL = { romance: 1.6, thriller: 1.5, fantasy: 1.4, fable: 1, selfhelp: 1, business: 0.9, literary: 0.6, memoir: 0.6, other: 0.8 };
-  function bookModel(v) {
-    var price = v.price, inBand = price >= 2.99 && price <= 12.99;
-    var royalty = inBand ? 0.7 * Math.max(0, price - 0.15 * v.fileMb) : 0.35 * price;
-    var pages = Math.round(v.words / 187), readVal = pages * 0.0045;
-    var warm = v.audience * v.conv / 100, pull = GENRE_PULL[v.genre] || 0.8;
-    var units = [warm * 0.5 + 15 * pull, warm + 50 * pull, warm * 2 + 200 * pull].map(Math.round);
-    var perUnit = v.ku === 'yes' ? 0.6 * royalty + 0.4 * readVal * 0.8 : royalty;
-    var rev = units.map(function (u) { return u * perUnit; });
-    var breakeven = v.budget > 0 ? Math.ceil(v.budget / Math.max(0.01, perUnit)) : 0;
-    var ready = 0;
-    if (v.revised === 'yes' || v.aiShare === 'none' || v.aiShare === 'assist') ready++;
-    if (v.copyedit !== 'none') ready++;
-    if (v.betas >= 3) ready++;
-    if (v.cover === 'pro') ready++;
-    return { inBand: inBand, royalty: royalty, pages: pages, readVal: readVal, warm: warm, units: units, perUnit: perUnit, rev: rev, breakeven: breakeven, ready: ready };
+  // ================================================================ 5. CHOOSE A COLLEGE
+  // Sticker cost = tuition, fees, housing, food and books for one year. Grants = free money (not loans).
+  // Defaults: College Board 2026-27 prices; grants set so net cost matches College Board's average net cost.
+  var COLLEGE_TYPES = {
+    instate: { l: 'Public, in-state', cost: 29000, grants: 7300 },
+    outstate: { l: 'Public, out-of-state', cost: 49600, grants: 9000 },
+    private: { l: 'Private nonprofit', cost: 65300, grants: 26800 },
+    cc: { l: 'Community college (2-year)', cost: 18000, grants: 1800 }
+  };
+  var FIELD_PAY = { stem: 75000, health: 65000, business: 60000, education: 45000, arts: 45000, social: 48000, undecided: 55000 };
+  var FED_ANNUAL = [5500, 6500, 7500, 7500, 7500, 7500], FED_LIMIT = 31000;
+  var PLUS_RATE = 9.07, PLUS_YEAR = 20000, PLUS_TOTAL = 65000, CC_NET = 16230;
+  function sumArr(a) { return a.reduce(function (s, x) { return s + x; }, 0); }
+  function collegeOne(v, k) {
+    var cost = v['cost' + k], grants = Math.min(v['grants' + k], cost), years = +v['years' + k] || 4;
+    var netYear = cost - grants, perYear = [];
+    for (var y = 0; y < years; y++) perYear.push(netYear * Math.pow(1.03, y));
+    var total = sumArr(perYear), famYear = v.family + v.work, sav = v.savings;
+    var fedY = [], plusY = [], privY = [], fedTot = 0, plusTot = 0;
+    perYear.forEach(function (c, i) {
+      var need = c, f = Math.min(need, famYear); need -= f;
+      var s = Math.min(need, sav); sav -= s; need -= s;
+      var fd = Math.max(0, Math.min(need, FED_ANNUAL[Math.min(i, 5)], FED_LIMIT - fedTot)); fedTot += fd; need -= fd;
+      var pl = Math.max(0, Math.min(need, PLUS_YEAR, PLUS_TOTAL - plusTot)); plusTot += pl; need -= pl;
+      fedY.push(fd); plusY.push(pl); privY.push(need);
+    });
+    var accrue = function (arr, rate) { return arr.reduce(function (s, x, i) { return s + x * (1 + rate / 100 * (years - i - 0.5)); }, 0); };
+    var debtFed = accrue(fedY, v.rate), debtParent = accrue(plusY, PLUS_RATE) + accrue(privY, PLUS_RATE);
+    var loans = sumArr(fedY) + sumArr(plusY) + sumArr(privY), debt = debtFed + debtParent;
+    var payFed = pmt(debtFed, v.rate, 10), payParent = pmt(debtParent, PLUS_RATE, 10), pay = payFed + payParent;
+    var salary = Math.max(1, v['salary' + k]);
+    var curve = [[0, 0]], cum = 0;
+    for (var t = 1; t <= years + 10; t++) {
+      cum += t <= years ? perYear[t - 1] - (fedY[t - 1] + plusY[t - 1] + privY[t - 1]) : pay * 12;
+      curve.push([t, cum]);
+    }
+    var altTotal = years > 2 ? CC_NET * 2 + sumArr(perYear.slice(2)) : total;
+    return {
+      key: k, name: v['name' + k] || (k === 'A' ? 'College A' : 'College B'), type: v['type' + k], typeL: (COLLEGE_TYPES[v['type' + k]] || COLLEGE_TYPES.instate).l,
+      cost: cost, grants: grants, netYear: netYear, years: years, total: total, outOfPocket: total - loans, loans: loans,
+      fed: sumArr(fedY), plus: sumArr(plusY), priv: sumArr(privY), debt: debt, debtFed: debtFed, debtParent: debtParent,
+      pay: pay, payFed: payFed, payParent: payParent, salary: salary, debtRatio: debt / salary, payShare: pay / (salary / 12) * 100,
+      grad: v['grad' + k], fit: +v['fit' + k], curve: curve, ccSaving: total - altTotal, lifeCost: curve[curve.length - 1][1]
+    };
   }
-  var BOOK = {
-    id: 'book', name: 'Publish a book', blurb: 'Publish on Amazon KDP now, or wait and polish?',
-    question: function (v) { return 'Should I publish ' + (v.title ? '"' + v.title + '"' : 'my book') + ' on KDP now?'; },
-    topics: { quality: 'Is the book ready', risk: 'Rules and account risk', reach: 'Readers and reach', money: 'Money', timing: 'Timing and goals' },
-    usdOnly: true,
+  function collegeModel(v) {
+    var A = collegeOne(v, 'A'), B = v.mode === 'two' ? collegeOne(v, 'B') : null;
+    return { A: A, B: B, two: !!B };
+  }
+  function collegeChecks(X) {
+    var fedOk = X.plus + X.priv === 0, plusOnly = X.priv === 0;
+    return [
+      C(X.name + ': debt under the first-year salary', X.debtRatio <= 1 ? 'pass' : X.debtRatio <= 1.5 ? 'warn' : 'fail', 'Debt at graduation ' + money(X.debt) + ' against a starting salary of ' + money(X.salary) + '.', 'debtRule'),
+      C(X.name + ': within student loan limits', fedOk ? 'pass' : plusOnly ? 'warn' : 'fail', fedOk ? 'Student federal loans cover the gap (' + money(X.fed) + ').' : plusOnly ? 'Needs ' + money(X.plus) + ' in Parent PLUS loans at 9.07%.' : 'Needs ' + money(X.priv) + ' more than federal and Parent PLUS limits allow (private loans).', 'plusRules'),
+      C(X.name + ': payments fit the first job', X.payShare <= 10 ? 'pass' : X.payShare <= 15 ? 'warn' : 'fail', money(X.pay) + ' a month, ' + pct(X.payShare, 1) + ' of starting pay before tax.', 'debtRule'),
+      C(X.name + ': most students finish', X.grad >= 60 ? 'pass' : 'warn', pct(X.grad) + ' graduate (national average 61%).', 'nscCompletion')
+    ];
+  }
+  var COLLEGE_FIELD_OPTS = [['stem', 'Engineering, computing or science'], ['health', 'Nursing or health'], ['business', 'Business or finance'], ['education', 'Teaching or education'], ['social', 'Social sciences or psychology'], ['arts', 'Arts or humanities'], ['undecided', 'Not decided yet']];
+  var TYPE_OPTS = [['instate', 'Public, in-state'], ['outstate', 'Public, out-of-state'], ['private', 'Private nonprofit'], ['cc', 'Community college (2-year)']];
+  var FIT_OPTS = [['5', 'Loves it'], ['4', 'Likes it a lot'], ['3', 'It is fine'], ['2', 'Not keen'], ['1', 'Does not want to go']];
+  var YEARS_OPTS = [['2', '2 years'], ['4', '4 years'], ['5', '5 years'], ['6', '6 years']];
+  function collegeGroup(k, title) {
+    var isB = k === 'B';
+    return { t: title, showIf: isB ? function (v) { return v.mode === 'two'; } : null, f: [
+      { id: 'name' + k, l: 'College name', type: 'text', def: '', ph: isB ? 'e.g. Iowa State University' : 'e.g. University of Iowa', opt: true },
+      { id: 'type' + k, l: 'Type of college', type: 'select', def: isB ? 'private' : 'instate', options: TYPE_OPTS, src: 'collegePrices' },
+      { id: 'cost' + k, l: 'Full cost per year (from the price sheet)', type: 'money', def: isB ? COLLEGE_TYPES.private.cost : COLLEGE_TYPES.instate.cost, step: 500, src: 'collegePrices', h: 'Tuition, fees, housing, food and books. Changes with the type of college unless you type your own.' },
+      { id: 'grants' + k, l: 'Grants and scholarships per year', type: 'money', def: isB ? COLLEGE_TYPES.private.grants : COLLEGE_TYPES.instate.grants, step: 500, src: 'collegeNet', h: 'Free money in the aid offer. Do not count loans or work-study.' },
+      { id: 'years' + k, l: 'Years to finish', type: 'select', def: 4, num: true, options: YEARS_OPTS },
+      { id: 'grad' + k, l: 'Share of students who graduate', type: 'pct', def: isB ? 70 : 61, step: 1, src: 'scorecard', h: 'Look up this college on College Scorecard. US average: 61%.' },
+      { id: 'salary' + k, l: 'Typical starting salary for this field', type: 'money', def: FIELD_PAY.undecided, step: 1000, src: 'scorecard', h: 'A planning estimate that follows the field of study. College Scorecard shows real earnings by school and program.' },
+      { id: 'fit' + k, l: 'How does the student feel about it?', type: 'select', def: isB ? 4 : 3, num: true, options: FIT_OPTS }
+    ] };
+  }
+  var COLLEGE = {
+    id: 'college', name: 'Choose a college', blurb: 'Is it worth the cost? Or which of two colleges?',
+    question: function (v) {
+      var a = v.nameA || 'College A', b = v.nameB || 'College B';
+      return v.mode === 'two' ? 'Should I choose ' + a + ' over ' + b + '?' : 'Should I go to ' + a + '?';
+    },
+    topics: { money: 'Total cost', debt: 'Loans and payments', finish: 'Finishing the degree', career: 'Career and pay', fit: 'Fit and feelings' },
     groups: [
-      { t: 'The book', f: [
-        { id: 'title', l: 'Title', type: 'text', def: '', ph: 'e.g. My First Novel', opt: true },
-        { id: 'genre', l: 'Genre', type: 'select', def: 'fable', options: [['fable', 'Inspirational fable or wisdom story'], ['thriller', 'Thriller or mystery'], ['romance', 'Romance or romantasy'], ['fantasy', 'Fantasy or sci-fi'], ['literary', 'Literary fiction'], ['selfhelp', 'Self-help'], ['business', 'Business or tech'], ['memoir', 'Memoir'], ['other', 'Other']] },
-        { id: 'words', l: 'Word count', type: 'num', def: 50000, step: 1000 },
-        { id: 'aiShare', l: 'How was it written?', type: 'select', def: 'assist', src: 'aiDisclosure', options: [['none', 'I wrote it myself'], ['assist', 'I wrote it; AI helped me edit'], ['heavy', 'AI drafted it; I rewrote most of it'], ['light', 'AI drafted it; light edits so far']] }
+      { t: 'The choice', f: [
+        { id: 'mode', l: 'What do you want to decide?', type: 'select', def: 'one', rerender: true, options: [['one', 'Is one college worth it?'], ['two', 'Compare two colleges']] },
+        { id: 'field', l: 'What the student wants to study', type: 'select', def: 'undecided', options: COLLEGE_FIELD_OPTS },
+        { id: 'sure', l: 'How sure is the student about it?', type: 'select', def: 'some', options: [['sure', 'Very sure'], ['some', 'Fairly sure'], ['unsure', 'Not sure yet']] },
+        { id: 'needDegree', l: 'Does the career they want need a degree?', type: 'select', def: 'helps', options: [['yes', 'Yes, it is required'], ['helps', 'It helps a lot'], ['no', 'Not really']] }
       ] },
-      { t: 'Is it ready?', f: [
-        { id: 'revised', l: 'Have you done your own full revision pass?', type: 'select', def: 'yes', options: YESNO },
-        { id: 'copyedit', l: 'Proofreading', type: 'select', def: 'self', options: [['pro', 'Professional copy-edit'], ['self', 'Careful proofread by me or a friend'], ['none', 'Not yet']] },
-        { id: 'betas', l: 'Readers who finished it and gave feedback', type: 'num', def: 3, step: 1, min: 0 },
-        { id: 'cover', l: 'Cover', type: 'select', def: 'self', options: [['pro', 'Professional designer'], ['self', 'Made it myself'], ['ai', 'AI-made']] },
-        { id: 'disclose', l: 'Will you answer KDP\'s AI questions truthfully?', type: 'select', def: 'yes', src: 'aiDisclosure', options: YESNO }
-      ] },
-      { t: 'Price and plan', f: [
-        { id: 'price', l: 'E-book price on Amazon.com (US $)', type: 'usd', def: 3.99, step: 0.5, src: 'kdpRoyalty', h: '70% royalty from $2.99 to $12.99; 35% outside that band.' },
-        { id: 'ku', l: 'Enroll in KDP Select (Kindle+)?', type: 'select', def: 'yes', src: 'kplus', options: YESNO, h: 'Kindle Unlimited became Kindle+ on Oct 22, 2026. 90 days exclusive to Amazon.' },
-        { id: 'print', l: 'Formats at launch', type: 'select', def: 'both', options: [['both', 'E-book and paperback together'], ['later', 'E-book first, paperback later'], ['ebook', 'E-book only']] },
-        { id: 'fileMb', l: 'E-book file size (MB)', type: 'num', def: 1, step: 0.5, h: 'Delivery fee is about $0.15 per MB on 70% sales.' },
-        { id: 'budget', l: 'Budget for editing, cover and ads', type: 'money', def: 300, step: 50 }
-      ] },
-      { t: 'Your reach and goals', f: [
-        { id: 'audience', l: 'People you can reach directly', type: 'num', def: 2000, step: 100, h: 'Followers, subscribers and email list combined.' },
-        { id: 'conv', l: 'Share of them you expect to buy or read it', type: 'pct', def: 1, step: 0.25, h: 'A planning guess. 0.5% to 2% is a common range for a warm audience.' },
-        { id: 'hours', l: 'Hours a week for marketing', type: 'num', def: 3, step: 1, min: 0 },
-        { id: 'timing', l: 'Timing', type: 'select', def: 'none', options: [['gift', 'Gift season is coming'], ['event', 'I have a launch event or partner'], ['none', 'No special timing']] },
-        { id: 'backlist', l: 'Your books already published', type: 'num', def: 0, step: 1, min: 0 },
-        { id: 'goal', l: 'Main goal', type: 'select', def: 'message', options: [['income', 'Income'], ['cred', 'Credibility'], ['message', 'Share the message'], ['learn', 'Learn the process']] }
+      collegeGroup('A', 'First college'),
+      collegeGroup('B', 'Second college'),
+      { t: 'Paying for it', f: [
+        { id: 'savings', l: 'Savings set aside for college', type: 'money', def: 20000, step: 1000, h: 'Including a 529 plan.' },
+        { id: 'family', l: 'What the family can pay each year from income', type: 'money', def: 6000, step: 500 },
+        { id: 'work', l: 'What the student can earn each year', type: 'money', def: 3000, step: 500, h: 'Part-time and summer jobs, work-study.' },
+        { id: 'rate', l: 'Student loan interest rate', type: 'pct', def: 6.52, step: 0.01, src: 'fedRate', h: 'Federal undergraduate rate for 2026-27, fixed for life.' }
       ] }
     ],
-    model: bookModel,
+    linked: function (id, v, touched) {
+      var up = {};
+      ['A', 'B'].forEach(function (k) {
+        if (id === 'type' + k) {
+          var t = COLLEGE_TYPES[v['type' + k]];
+          if (t && !touched['cost' + k]) up['cost' + k] = t.cost;
+          if (t && !touched['grants' + k]) up['grants' + k] = t.grants;
+          if (v['type' + k] === 'cc' && !touched['years' + k]) up['years' + k] = 2;
+        }
+        if (id === 'field' && !touched['salary' + k]) up['salary' + k] = FIELD_PAY[v.field] || FIELD_PAY.undecided;
+      });
+      return Object.keys(up).length ? up : null;
+    },
+    model: collegeModel,
     argue: function (v, m) {
-      var out = [], aiDraft = v.aiShare === 'heavy' || v.aiShare === 'light';
-      out.push(P('for', 'money', 2, 'Publishing costs nothing up front', 'KDP charges nothing to publish. ' + (v.budget > 0 ? 'Your ' + money(v.budget) + ' budget is a choice, not a requirement.' : 'You can launch with no spend at all.'), 'kdpRoyalty'));
-      if (m.inBand) out.push(P('for', 'money', 2, 'You keep 70% of each sale', 'At ' + usd(v.price) + ' you earn about ' + usd(m.royalty) + ' per sale.', 'kdpRoyalty'));
-      if (v.audience >= 1000) out.push(P('for', 'reach', v.audience >= 10000 ? 4 : 3, 'You have people to tell', 'You can reach ' + num(v.audience) + ' people directly. At ' + pct(v.conv, 1) + ' that is about ' + num(Math.round(m.warm)) + ' first readers, the people who leave the first reviews.', null));
-      if (v.ku === 'yes') out.push(P('for', 'reach', 2, 'Kindle+ adds discovery', 'In KDP Select the book sits in Kindle+ (formerly Kindle Unlimited), where readers try new authors at no extra cost. A full read earns about ' + usd(m.readVal) + ', and India sales earn 70%.', 'kplus'));
-      if (v.timing === 'gift') out.push(P('for', 'timing', 3, 'Good timing', 'Gift season is close' + (v.genre === 'fable' || v.genre === 'selfhelp' ? ', and short uplifting books are bought as gifts.' : '.'), 'preorder'));
-      if (v.genre === 'fable' || v.genre === 'selfhelp') out.push(P('for', 'timing', 3, 'Readers want books like this now', 'A self-published inspirational novel, Theo of Golden, went from word of mouth to the best-selling print book in the US in 2026. Readers are looking for the next one.', 'theo'));
-      if (v.timing === 'event') out.push(P('for', 'timing', 3, 'A launch moment is ready', 'An event or partner gives the launch a push you cannot buy later.', null));
-      if (m.ready >= 3) out.push(P('for', 'quality', 4, 'The book has been tested', 'It has been revised and proofread, and ' + v.betas + ' readers finished it.', null));
-      if (v.goal === 'learn' || v.goal === 'message') out.push(P('for', 'timing', 3, 'Your goal does not need big sales', 'You want to ' + (v.goal === 'learn' ? 'learn the process' : 'share the message') + '. Shipping does that; sales are a bonus.', 'regret'));
-      if (v.backlist >= 1) out.push(P('for', 'reach', 1, 'You know KDP already', 'You have published before, so the account, tax and bank setup is done.', null));
-      if (v.words < 45000 && (v.genre === 'fable' || v.genre === 'selfhelp')) out.push(P('for', 'quality', 1, 'A short, giftable length', 'About ' + num(m.pages) + ' Kindle pages: a weekend read.', null));
-      out.push(P('for', 'risk', 1, 'You can fix it after launch', 'You can upload a corrected file at any time.', 'preorder'));
-      // against
-      if (aiDraft && v.revised === 'no') out.push(P('against', 'quality', v.aiShare === 'light' ? 5 : 3, 'It is not yet in your voice', 'The draft came from AI and you have not done your own revision pass. Readers notice generic prose, and unrevised AI text cannot be copyrighted.', 'copyright'));
-      else if (v.aiShare === 'light') out.push(P('against', 'quality', 2, 'Most of the text is still AI', 'Even after edits, the more of it that is yours, the stronger your rights and the better it reads.', 'copyright'));
-      if (v.copyedit === 'none') out.push(P('against', 'quality', 4, 'No proofread yet', 'Typos in the first pages draw early 1- and 2-star reviews, and those stay on the page while you have few reviews.', null));
-      if (v.betas < 3) out.push(P('against', 'quality', v.betas === 0 ? 3 : 2, 'Few outside readers', (v.betas === 0 ? 'Nobody outside has finished it yet.' : 'Only ' + v.betas + ' outside reader(s) so far.') + ' Three to five beta readers find slow chapters and confusing parts fast.', 'premortem'));
-      if (v.cover === 'ai') out.push(P('against', 'quality', 3, 'An AI-made cover', 'Readers judge by the thumbnail, and an AI image must be declared to KDP. A genre-savvy designer cover costs a few hundred dollars.', 'aiDisclosure'));
-      else if (v.cover === 'self') out.push(P('against', 'quality', 2, 'A homemade cover', 'Covers sell books. A designer who knows the genre usually beats a homemade cover.', null));
-      if (v.disclose === 'no') out.push(P('against', 'risk', 5, 'Hiding AI content risks your account', 'KDP requires you to declare AI-generated text and images. Getting caught can cost the whole account.', 'aiDisclosure'));
-      if (aiDraft && v.backlist > 0) out.push(P('against', 'risk', 2, 'Your other books share the account', 'Enforcement has reportedly reached whole accounts, which includes your ' + v.backlist + ' published ' + plural(v.backlist, 'book', 'books') + '. Disclose truthfully and keep quality high.', 'kdpEnforce'));
-      if (v.print !== 'both' && (v.genre === 'fable' || v.genre === 'selfhelp' || v.genre === 'memoir' || v.genre === 'literary')) out.push(P('against', 'reach', 2, 'Gift and book-club readers buy print', 'Books like this travel as gifts and through book clubs, mostly in print. Theo of Golden spread as paperbacks passed hand to hand. ' + (v.print === 'ebook' ? 'An e-book alone misses them.' : 'Launching print later misses the first wave.'), 'theo'));
-      out.push(P('against', 'money', v.goal === 'income' ? 4 : 2, 'Expect modest money at first', 'Base case for year one: about ' + num(m.units[1]) + ' sales or reads, around ' + usd(m.rev[1], 0) + '. 44% of indie authors earn $100 a month or less.', 'authorIncome'));
-      if (v.budget > 0) out.push(P('against', 'money', m.breakeven > m.units[1] ? 3 : 1, 'The budget takes time to earn back', 'You need about ' + num(m.breakeven) + ' sales or reads to earn back ' + money(v.budget) + '.', 'kdpRoyalty'));
-      if (v.audience < 500) out.push(P('against', 'reach', 3, 'A small launch audience', 'About 3.5 million self-published titles got ISBNs in 2025. Without people to tell, a new book is rarely seen.', 'bowker'));
-      if (v.hours < 2) out.push(P('against', 'reach', 2, 'Little time to promote it', 'Books that sell are usually promoted for weeks, not just announced once.', null));
-      if (!m.inBand) out.push(P('against', 'money', 2, 'Price outside the 70% band', 'At ' + usd(v.price) + ' you earn 35%. Between $2.99 and $12.99 you would earn 70%.', 'kdpRoyalty'));
-      if (v.ku === 'no' && (v.genre === 'romance' || v.genre === 'thriller' || v.genre === 'fantasy')) out.push(P('against', 'reach', 2, 'Genre readers live in Kindle+', 'Romance, thriller and fantasy readers borrow heavily through Kindle+.', 'kplus'));
+      var out = [], A = m.A, B = m.B;
+      if (!B) {
+        var prem = v.needDegree === 'yes' ? 4 : v.needDegree === 'helps' ? 3 : 2;
+        out.push(P('for', 'career', prem, 'A degree still pays', 'In 2025, bachelor\'s degree holders earned a median $1,578 a week against $966 with a high school diploma, and were less often out of work (2.8% against 4.3%).', 'blsPay'));
+        if (v.needDegree === 'yes') out.push(P('for', 'career', 4, 'The career needs the degree', 'There is no way around the degree for this career, so the real question is which college and how to pay.', null));
+        if (A.loans <= 0) out.push(P('for', 'debt', 4, 'No loans needed', 'Savings, family income and the student\'s work cover the whole ' + money(A.total) + '.', null));
+        else if (A.debtRatio <= 1) out.push(P('for', 'debt', 3, 'The debt is manageable', 'Debt at graduation of about ' + money(A.debt) + ' is under the typical starting salary of ' + money(A.salary) + '.', 'debtRule'));
+        if (A.grants >= A.cost * 0.3) out.push(P('for', 'money', 2, 'Grants cover a big share', money(A.grants) + ' a year in grants covers ' + pct(A.grants / A.cost * 100) + ' of the full cost.', 'collegeNet'));
+        if (A.grad >= 70) out.push(P('for', 'finish', 3, 'Most students finish here', pct(A.grad) + ' of students graduate, above the national 61%.', 'nscCompletion'));
+        if (A.fit >= 4) out.push(P('for', 'fit', 3, 'The student wants to be there', 'Students who want to be somewhere are more likely to stay and finish.', null));
+        if (v.sure === 'sure') out.push(P('for', 'career', 2, 'A clear goal', 'Knowing the direction means fewer wasted credits and a better chance of finishing on time.', null));
+        if (A.debtRatio > 1) out.push(P('against', 'debt', A.debtRatio > 1.5 ? 5 : 4, 'The debt is bigger than the first salary', 'Debt at graduation would be about ' + money(A.debt) + ', ' + pct(A.debtRatio * 100) + ' of the expected ' + money(A.salary) + ' starting salary.', 'debtRule'));
+        if (A.payShare > 10) out.push(P('against', 'debt', A.payShare > 15 ? 5 : 4, 'Payments would squeeze the first job', 'Loan payments of ' + money(A.pay) + ' a month would take ' + pct(A.payShare, 1) + ' of starting pay before tax.', 'debtRule'));
+        if (A.plus > 0) out.push(P('against', 'debt', 3, 'Parents would need PLUS loans', 'Student federal loans stop at $31,000. About ' + money(A.plus) + ' more would be Parent PLUS loans at 9.07%, now capped at $20,000 a year.', 'plusRules'));
+        if (A.priv > 0) out.push(P('against', 'debt', 4, 'Private loans needed', 'Even after federal and Parent PLUS loans, ' + money(A.priv) + ' is left to borrow privately.', 'plusRules'));
+        if (A.grad < 60) out.push(P('against', 'finish', A.grad < 45 ? 4 : 3, 'Many students here do not finish', 'Only ' + pct(A.grad) + ' graduate. Debt without a degree is the worst outcome.', 'nscCompletion'));
+        if (v.sure === 'unsure' && A.type !== 'cc' && A.ccSaving > 0) out.push(P('against', 'money', 3, 'Undecided? Start cheaper', 'Two years at a community college, then transferring, could save about ' + money(A.ccSaving) + ' while the student decides.', 'collegeNet'));
+        else if (A.type !== 'cc' && A.ccSaving > 15000) out.push(P('against', 'money', 2, 'A cheaper path exists', 'Starting at a community college and transferring after 2 years could save about ' + money(A.ccSaving) + '.', 'collegeNet'));
+        if (A.type === 'outstate') out.push(P('against', 'money', 3, 'Out-of-state costs much more', 'Average out-of-state tuition is $32,730 against $12,290 in-state (2026-27).', 'collegePrices'));
+        out.push(P('against', 'career', 2, 'The first job market is tight', 'Recent graduates had 5.2% unemployment in Q3 2026, and 42.5% worked in jobs that do not need a degree.', 'nyfed'));
+        if (A.fit <= 2) out.push(P('against', 'fit', 3, 'The student is not keen', 'A student who does not want to be there is more likely to drop out.', null));
+        return out;
+      }
+      // ---- compare A against B: Agent 1 argues for A, Agent 2 for B
+      var dT = B.total - A.total;
+      if (dT > 2000) out.push(P('for', 'money', dT > 30000 ? 5 : dT > 10000 ? 4 : 3, A.name + ' costs less', 'After grants, ' + A.name + ' costs about ' + money(dT) + ' less over the degree (' + money(A.total) + ' against ' + money(B.total) + ').', 'collegePrices'));
+      if (dT < -2000) out.push(P('against', 'money', -dT > 30000 ? 5 : -dT > 10000 ? 4 : 3, B.name + ' costs less', 'After grants, ' + B.name + ' costs about ' + money(-dT) + ' less over the degree (' + money(B.total) + ' against ' + money(A.total) + ').', 'collegePrices'));
+      var dD = B.debt - A.debt;
+      if (dD > 2000) out.push(P('for', 'debt', dD > 20000 ? 4 : 3, 'Less debt with ' + A.name, A.name + ' means about ' + money(dD) + ' less debt and ' + money(B.pay - A.pay) + ' less to repay each month for 10 years.', 'fedRate'));
+      if (dD < -2000) out.push(P('against', 'debt', -dD > 20000 ? 4 : 3, 'Less debt with ' + B.name, B.name + ' means about ' + money(-dD) + ' less debt and ' + money(A.pay - B.pay) + ' less to repay each month for 10 years.', 'fedRate'));
+      if (A.debtRatio > 1 && B.debtRatio <= 1) out.push(P('against', 'debt', 4, A.name + '\'s debt is bigger than the first salary', 'At ' + A.name + ' debt would be ' + pct(A.debtRatio * 100) + ' of the starting salary; at ' + B.name + ' it stays under it.', 'debtRule'));
+      if (B.debtRatio > 1 && A.debtRatio <= 1) out.push(P('for', 'debt', 4, B.name + '\'s debt is bigger than the first salary', 'At ' + B.name + ' debt would be ' + pct(B.debtRatio * 100) + ' of the starting salary; at ' + A.name + ' it stays under it.', 'debtRule'));
+      if (A.priv + A.plus > 0 && B.priv + B.plus === 0) out.push(P('against', 'debt', 3, A.name + ' needs parent or private loans', A.name + ' goes past student loan limits by ' + money(A.priv + A.plus) + '; ' + B.name + ' does not.', 'plusRules'));
+      if (B.priv + B.plus > 0 && A.priv + A.plus === 0) out.push(P('for', 'debt', 3, B.name + ' needs parent or private loans', B.name + ' goes past student loan limits by ' + money(B.priv + B.plus) + '; ' + A.name + ' does not.', 'plusRules'));
+      var dG = A.grad - B.grad;
+      if (dG >= 5) out.push(P('for', 'finish', dG >= 15 ? 4 : 3, 'More students finish at ' + A.name, pct(A.grad) + ' graduate at ' + A.name + ' against ' + pct(B.grad) + ' at ' + B.name + '.', 'nscCompletion'));
+      if (dG <= -5) out.push(P('against', 'finish', -dG >= 15 ? 4 : 3, 'More students finish at ' + B.name, pct(B.grad) + ' graduate at ' + B.name + ' against ' + pct(A.grad) + ' at ' + A.name + '.', 'nscCompletion'));
+      var dS = A.salary - B.salary;
+      if (dS >= 3000) out.push(P('for', 'career', dS >= 10000 ? 4 : 2, 'Graduates of ' + A.name + ' earn more', 'Typical starting pay of ' + money(A.salary) + ' against ' + money(B.salary) + '. Check both on College Scorecard.', 'scorecard'));
+      if (dS <= -3000) out.push(P('against', 'career', -dS >= 10000 ? 4 : 2, 'Graduates of ' + B.name + ' earn more', 'Typical starting pay of ' + money(B.salary) + ' against ' + money(A.salary) + '. Check both on College Scorecard.', 'scorecard'));
+      var dF = A.fit - B.fit;
+      if (dF >= 1) out.push(P('for', 'fit', dF >= 2 ? 4 : 2, 'The student prefers ' + A.name, 'A student who wants to be there is more likely to stay and finish.', null));
+      if (dF <= -1) out.push(P('against', 'fit', -dF >= 2 ? 4 : 2, 'The student prefers ' + B.name, 'A student who wants to be there is more likely to stay and finish.', null));
+      if (!out.some(function (p) { return p.side === 'for'; })) out.push(P('for', 'money', 1, 'Nothing clearly favours ' + A.name, 'On these numbers ' + A.name + ' has no clear edge over ' + B.name + '.', null));
+      if (!out.some(function (p) { return p.side === 'against'; })) out.push(P('against', 'money', 1, 'Nothing clearly favours ' + B.name, 'On these numbers ' + B.name + ' has no clear edge over ' + A.name + '.', null));
       return out;
     },
-    checks: function (v, m) {
-      var voice = (v.aiShare === 'none' || v.aiShare === 'assist') ? 'pass' : v.aiShare === 'heavy' ? (v.revised === 'yes' ? 'pass' : 'warn') : (v.revised === 'yes' ? 'warn' : 'fail');
-      return [
-        C('AI content declared truthfully', v.disclose === 'yes' ? 'pass' : 'fail', v.disclose === 'yes' ? 'You will answer KDP\'s AI questions honestly.' : 'Required by KDP.', 'aiDisclosure'),
-        C('Text is in the author\'s own voice', voice, voice === 'pass' ? 'Written or rewritten by you.' : v.revised === 'yes' ? 'Mostly AI text, revised by you.' : 'AI draft without your own revision pass.', 'copyright'),
-        C('Proofread', v.copyedit === 'none' ? 'warn' : 'pass', v.copyedit === 'pro' ? 'Professional copy-edit.' : v.copyedit === 'self' ? 'Careful proofread.' : 'Not proofread yet.', null),
-        C('Outside readers', v.betas >= 3 ? 'pass' : 'warn', v.betas + ' finished it.', 'premortem'),
-        C('Cover ready to compete', v.cover === 'pro' ? 'pass' : 'warn', v.cover === 'pro' ? 'Designer cover.' : v.cover === 'ai' ? 'AI-made; must be declared.' : 'Homemade.', 'aiDisclosure'),
-        C('Price earns 70%', m.inBand ? 'pass' : 'warn', usd(v.price) + (m.inBand ? ' is in the $2.99 to $12.99 band.' : ' is outside the band.'), 'kdpRoyalty')
-      ];
+    checks: function (v, m) { return m.B ? collegeChecks(m.A).concat(collegeChecks(m.B)) : collegeChecks(m.A); },
+    // In compare mode the call names a college, and only the chosen college's checks can block it.
+    verdict: function (r) {
+      var m = r.m; if (!m.B) return null;
+      var A = m.A.name, B = m.B.name;
+      var failA = r.checks.some(function (c) { return c.status === 'fail' && c.label.indexOf(A + ':') === 0; });
+      var failB = r.checks.some(function (c) { return c.status === 'fail' && c.label.indexOf(B + ':') === 0; });
+      var warnA = r.checks.some(function (c) { return c.status === 'warn' && c.label.indexOf(A + ':') === 0; });
+      if (failA && failB) return { verdict: 'wait', word: 'Neither works yet', line: 'Both colleges fail a money check. Ask both for more aid, look at in-state or community college options, or borrow less.' };
+      if (failA) return { verdict: 'no', word: 'Choose ' + B, line: A + ' fails a money check that ' + B + ' passes.' };
+      if (failB && r.score >= -20) return { verdict: warnA ? 'cond' : 'go', word: warnA ? 'Choose ' + A + ', with conditions' : 'Choose ' + A, line: B + ' fails a money check that ' + A + ' passes.' };
+      if (r.score >= 20) return { verdict: warnA ? 'cond' : 'go', word: warnA ? 'Choose ' + A + ', with conditions' : 'Choose ' + A, line: 'The case for ' + A + ' is clearly stronger.' };
+      if (r.score > 0) return { verdict: 'cond', word: 'Lean ' + A, line: 'Close call. ' + A + ' edges it; check the items under "What would change the answer".' };
+      if (r.score === 0) return { verdict: 'cond', word: 'Too close to call', line: 'The colleges are even on these numbers. Let fit, aid appeals and a campus visit decide.' };
+      if (r.score > -20) return { verdict: 'cond', word: 'Lean ' + B, line: 'Close call. ' + B + ' edges it; check the items under "What would change the answer".' };
+      return { verdict: 'no', word: 'Choose ' + B, line: 'The case for ' + B + ' is clearly stronger.' };
     },
+    ends: function (v, m) { return m.B ? [m.A.name, m.B.name] : null; },
     flips: function (v, m) {
-      var f = [];
-      if ((v.aiShare === 'light' || v.aiShare === 'heavy') && v.revised === 'no') f.push('Finish your own revision pass, chapter by chapter, in your voice.');
-      if (v.copyedit === 'none') f.push('One careful proofread, by you and a sharp-eyed friend, or a professional.');
-      if (v.betas < 3) f.push('Three readers from your audience who finish it and tell you where they got bored.');
-      if (v.cover === 'ai') f.push('A designer cover, or at least a cover checked against the top 20 books in your category.');
-      if (v.timing === 'gift' && m.ready < 3) f.push('Use pre-order: list it now with a release date 2 to 4 weeks out, and upload the final file at least 72 hours before.');
+      var f = [], list = m.B ? [m.A, m.B] : [m.A];
+      list.forEach(function (X) {
+        if (X.debtRatio > 1) f.push(X.name + ': about ' + money(X.debt - X.salary) + ' more in grants or savings (or less borrowing) brings the debt under the starting salary.');
+        if (X.priv > 0) f.push(X.name + ': ' + money(X.priv) + ' more aid would avoid private loans.');
+      });
+      if (m.B) f.push('Ask both colleges to match each other\'s aid offer; many will review an appeal with a competing offer.');
+      if (!m.B && v.sure === 'unsure' && m.A.type !== 'cc') f.push('Two years at a community college first, then transfer.');
+      if (!m.B && m.A.type === 'outstate') f.push('An in-state public university with a similar program.');
       return f;
     },
     steps: function (v, m) {
-      return ['Answer KDP\'s AI questions truthfully (they are private).',
-        'Line up 10 to 20 early readers to post honest reviews in week one; reviews cannot be paid for.',
-        'Tell your audience three times: the announcement, launch day, and when the first reviews arrive.',
-        'Compare your cover and description with the top 20 books in your exact category.',
-        'Check the KDP royalty page shows 70% for each store before you press Publish.'];
+      var s = ['File the FAFSA as soon as it opens; aid is first come, first served at many colleges.',
+        'Look up each college on College Scorecard: graduation rate, typical debt and earnings for the exact program.',
+        'Compare official aid offers line by line: grants are free money, loans are not.'];
+      if (m.B) s.push('Send each college the other\'s offer and ask for a review.');
+      s.push('Borrow federal student loans before any private loan; they have fixed rates and income-based repayment.');
+      return s;
     },
     numbers: function (v, m) {
-      return [
-        { l: 'You earn per sale', v: usd(m.royalty), n: m.inBand ? '70% of ' + usd(v.price) + ' minus delivery' : '35% of ' + usd(v.price) },
-        { l: 'Kindle pages (estimate)', v: num(m.pages), n: 'About 187 words a page' },
-        { l: 'Per full Kindle+ read', v: usd(m.readVal), n: 'At about $0.0045 a page' },
-        { l: 'Year one, low / base / high', v: num(m.units[0]) + ' / ' + num(m.units[1]) + ' / ' + num(m.units[2]), n: 'Sales or full reads. Planning guesses, not forecasts.' },
-        { l: 'Year-one royalties, base case', v: usd(m.rev[1], 0), n: 'Low ' + usd(m.rev[0], 0) + ', high ' + usd(m.rev[2], 0) },
-        { l: 'Readiness', v: m.ready + ' of 4', n: 'Your voice, proofread, 3+ readers, pro cover', tone: m.ready >= 3 ? 'good' : m.ready >= 2 ? 'warn' : 'bad' }
+      var A = m.A, B = m.B;
+      if (!B) return [
+        { l: 'Cost per year after grants', v: money(A.netYear) },
+        { l: 'Total over ' + A.years + ' years', v: money(A.total), n: 'Rising 3% a year' },
+        { l: 'Paid from savings, income and work', v: money(A.outOfPocket) },
+        { l: 'Loans needed', v: money(A.loans), n: 'Student ' + money(A.fed) + (A.plus ? ', Parent PLUS ' + money(A.plus) : '') + (A.priv ? ', private ' + money(A.priv) : ''), tone: A.priv ? 'bad' : A.plus ? 'warn' : 'good' },
+        { l: 'Debt at graduation', v: money(A.debt), n: 'With interest while in school' },
+        { l: 'Monthly payment (10 years)', v: money(A.pay) + '/mo', tone: A.payShare <= 10 ? 'good' : A.payShare <= 15 ? 'warn' : 'bad' },
+        { l: 'Debt against starting salary', v: pct(A.debtRatio * 100), tone: A.debtRatio <= 1 ? 'good' : A.debtRatio <= 1.5 ? 'warn' : 'bad' }
       ];
+      var tone = function (a, b, lowGood) { return a === b ? '' : ((a < b) === lowGood ? 'good' : 'bad'); };
+      return { cols: [A.name, B.name], rows: [
+        { l: 'Cost per year after grants', a: money(A.netYear), b: money(B.netYear), ta: tone(A.netYear, B.netYear, true), tb: tone(B.netYear, A.netYear, true) },
+        { l: 'Total cost of the degree', a: money(A.total), b: money(B.total), ta: tone(A.total, B.total, true), tb: tone(B.total, A.total, true) },
+        { l: 'Loans needed', a: money(A.loans), b: money(B.loans), ta: tone(A.loans, B.loans, true), tb: tone(B.loans, A.loans, true) },
+        { l: 'Monthly payment (10 years)', a: money(A.pay), b: money(B.pay), ta: tone(A.pay, B.pay, true), tb: tone(B.pay, A.pay, true) },
+        { l: 'Debt against starting salary', a: pct(A.debtRatio * 100), b: pct(B.debtRatio * 100), ta: A.debtRatio <= 1 ? 'good' : 'bad', tb: B.debtRatio <= 1 ? 'good' : 'bad' },
+        { l: 'Students who graduate', a: pct(A.grad), b: pct(B.grad), ta: tone(B.grad, A.grad, true), tb: tone(A.grad, B.grad, true) },
+        { l: 'Starting salary', a: money(A.salary), b: money(B.salary), ta: tone(B.salary, A.salary, true), tb: tone(A.salary, B.salary, true) }
+      ] };
     },
     chart: function (v, m) {
-      var lo = [], base = [], hi = [];
-      for (var mo = 0; mo <= 12; mo++) {
-        // launch-heavy curve: 40% of year one lands in the first 2 months
-        var share = mo === 0 ? 0 : Math.min(1, 0.4 * Math.min(mo, 2) / 2 + 0.6 * Math.max(0, mo - 2) / 10);
-        lo.push([mo, m.rev[0] * share]); base.push([mo, m.rev[1] * share]); hi.push([mo, m.rev[2] * share]);
-      }
-      return { title: 'Royalties in year one (US $)', note: 'Rough planning ranges, front-loaded at launch. Your audience and reviews move these most.', x: 'Months after launch', series: [
-        { name: 'High', cls: 'for', pts: hi, dash: true }, { name: 'Base', cls: 'for', pts: base }, { name: 'Low', cls: 'against', pts: lo, dash: true }
-      ], zero: false, fmt: 'usd', mark: v.budget > 0 ? null : null };
+      var series = [{ name: m.A.name, cls: 'for', pts: m.A.curve }];
+      if (m.B) series.push({ name: m.B.name, cls: 'against', pts: m.B.curve });
+      return { title: 'What the degree really costs, year by year', note: 'Money paid during college, then 10 years of loan payments.', x: 'Years from the first day', series: series, zero: false, fmt: 'money' };
     }
   };
 
@@ -1345,17 +1551,20 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
     }
   };
 
-  var CATS = [HOME, CAR, MOVE, INVEST, BOOK, CUSTOM];
+  var CATS = [HOME, CAR, COLLEGE, MOVE, INVEST, CUSTOM];
   var BY_ID = {}; CATS.forEach(function (c) { BY_ID[c.id] = c; });
 
   // ---------------------------------------------------------------- run
   function fieldsOf(cat) { var a = []; cat.groups.forEach(function (g) { g.f.forEach(function (f) { a.push(f); }); }); return a; }
   function defaults(cat) { var v = {}; fieldsOf(cat).forEach(function (f) { v[f.id] = Array.isArray(f.def) ? f.def.map(function (r) { return r.slice(); }) : f.def; }); return v; }
   function normalize(cat, values) {
-    var v = {}, kept = 0, total = 0;
-    fieldsOf(cat).forEach(function (f) {
+    var v = {}, kept = 0, total = 0, probe = Object.assign(defaults(cat), values || {});
+    cat.groups.forEach(function (g) {
+     var shown = !g.showIf || g.showIf(probe);
+     g.f.forEach(function (f) {
       var raw = values && values[f.id] !== undefined ? values[f.id] : f.def;
-      if (f.type === 'text' || f.type === 'select') v[f.id] = String(raw == null ? '' : raw);
+      if (f.type === 'select' && f.num) v[f.id] = isFinite(parseFloat(raw)) ? parseFloat(raw) : f.def;
+      else if (f.type === 'text' || f.type === 'select') v[f.id] = String(raw == null ? '' : raw);
       else if (f.type === 'list') v[f.id] = Array.isArray(raw) ? raw : [];
       else {
         var n = typeof raw === 'number' ? raw : parseFloat(String(raw).replace(/[^0-9.\-]/g, ''));
@@ -1365,7 +1574,8 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
         if (f.max != null) n = Math.min(f.max, n);
         v[f.id] = n;
       }
-      if (!f.opt && f.type !== 'text' && f.type !== 'list') { total++; if (JSON.stringify(v[f.id]) === JSON.stringify(f.def)) kept++; }
+      if (shown && !f.opt && !f.adv && f.type !== 'text' && f.type !== 'list') { total++; if (JSON.stringify(v[f.id]) === JSON.stringify(f.def)) kept++; }
+     });
     });
     return { v: v, kept: kept, total: total };
   }
@@ -1398,6 +1608,10 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
     if (fails.length) conf = Math.max(conf, 70);
     conf = Math.round(clamp(conf, 30, 92));
     var vt = { word: VERDICTS[verdict].word, line: VERDICTS[verdict].line };
+    if (cat.verdict) {
+      var ov = cat.verdict({ m: m, v: v, score: score, checks: checks });
+      if (ov) { verdict = ov.verdict; vt = { word: ov.word, line: ov.line }; }
+    }
     if (verdict === 'wait' && !fails.length) vt.line = 'On your numbers the case against is stronger for now. The items under "What would change the answer" could flip it.';
     if (verdict === 'cond' && score < 20) vt.line = 'The two sides are close. It can work if you handle the conditions below.';
     // rounds: one per topic, strongest topics first
@@ -1425,7 +1639,7 @@ footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: gri
       cat: cat, catId: cat.id, v: v, m: m, question: question, pros: pros, cons: cons, forW: forW, againstW: againstW, score: score,
       checks: checks, fails: fails, warns: warns, verdict: verdict, verdictText: vt, confidence: conf, kept: nv.kept, totalFields: nv.total,
       rounds: rounds, morePros: morePros, moreCons: moreCons, lean: lean, decider: decider,
-      flips: cat.flips(v, m), steps: cat.steps(v, m), numbers: cat.numbers(v, m), chart: cat.chart(v, m),
+      flips: cat.flips(v, m), steps: cat.steps(v, m), numbers: cat.numbers(v, m), chart: cat.chart(v, m), ends: cat.ends ? cat.ends(v, m) : null,
       facts: Object.keys(factIds).filter(function (k) { return FACTS[k]; })
     };
   }
@@ -1600,6 +1814,10 @@ window.DE_PRESETS = [];</script>
     if (!S.all[cat]) S.all[cat] = { values: DE.defaults(DE.BY_ID[cat]), touched: {}, notes: '' };
     var s = S.all[cat], d = DE.defaults(DE.BY_ID[cat]);
     Object.keys(d).forEach(function (k) { if (s.values[k] === undefined) s.values[k] = d[k]; });
+    // a draft saved by an older version may hold a choice that no longer exists: use the example value
+    DE.fieldsOf(DE.BY_ID[cat]).forEach(function (f) {
+      if (f.type === 'select' && !f.options.some(function (o) { return o[0] === String(s.values[f.id]); })) { s.values[f.id] = d[f.id]; delete s.touched[f.id]; }
+    });
     return s;
   }
   var saveDraftT = null;
@@ -1647,7 +1865,6 @@ window.DE_PRESETS = [];</script>
     var p = el('p');
     if (r && r.kept === r.totalFields) p.textContent = 'You are looking at example values. Change any box and the agents re-argue instantly.';
     else if (r) p.textContent = (r.totalFields - r.kept) + ' of ' + r.totalFields + ' boxes hold your own values. ' + (r.kept ? r.kept + ' still hold examples.' : 'All yours.');
-    if (cat.usdOnly && S.cur !== 'USD') p.textContent += ' KDP prices and royalties stay in US dollars.';
     n.append(p);
     var ps = PRESETS.filter(function (x) { return x.cat === S.cat; });
     if (ps.length) {
@@ -1672,18 +1889,44 @@ window.DE_PRESETS = [];</script>
     return {};
   }
   function renderForm() {
-    var form = $('form'), cat = DE.BY_ID[S.cat], s = slot(S.cat); form.replaceChildren();
+    var form = $('form'), cat = DE.BY_ID[S.cat], s = slot(S.cat), byId = {}; form.replaceChildren();
+    DE.fieldsOf(cat).forEach(function (f) { byId[f.id] = f; });
     cat.groups.forEach(function (g) {
+      if (g.showIf && !g.showIf(s.values)) return;
       var fs = el('fieldset', 'grp'); fs.append(el('legend', null, g.t));
-      g.f.forEach(function (f) { fs.append(fieldEl(f, s)); });
+      var grid = el('div', 'fgrid');
+      g.f.forEach(function (f) {
+        if (f.adv) return;   // research assumptions live in the box under the field that lists them
+        grid.append(fieldEl(f, s));
+        if (f.assume) grid.append(assumeEl(f.assume.map(function (id) { return byId[id]; }), s));
+      });
+      fs.append(grid);
       form.append(fs);
     });
     $('notes').value = s.notes || '';
     renderNotice();
   }
+  function assumeText(f, val) { return f.sl.replace('{v}', (f.type === 'pct' ? val + '%' : String(val))) + '. '; }
+  function assumeEl(fields, s) {
+    var box = el('div', 'assume');
+    box.append(el('b', null, 'What we assume, from our research'));
+    var ul = el('ul');
+    fields.forEach(function (f) {
+      var li = el('li'); li.dataset.id = f.id;
+      li.append(el('span', 'say-a', assumeText(f, s.values[f.id])));
+      if (f.h) li.append(el('span', 'muted', f.h + ' '));
+      if (f.src && DE.FACTS[f.src]) li.append(factLink(f.src));
+      ul.append(li);
+    });
+    box.append(ul);
+    var det = el('details'); det.append(el('summary', null, 'Change these assumptions'));
+    var grid = el('div', 'fgrid'); fields.forEach(function (f) { grid.append(fieldEl(f, s, true)); });
+    det.append(grid); box.append(det);
+    return box;
+  }
   function isDefault(f, val) { return JSON.stringify(val) === JSON.stringify(f.def); }
-  function fieldEl(f, s) {
-    var wrap = el('div', 'field' + (isDefault(f, s.values[f.id]) ? '' : ' changed')), id = 'f-' + S.cat + '-' + f.id;
+  function fieldEl(f, s, inAssume) {
+    var wrap = el('div', 'field' + (f.type === 'list' ? ' wide' : '') + (isDefault(f, s.values[f.id]) ? '' : ' changed')), id = 'f-' + S.cat + '-' + f.id;
     var lab = el('label', null, f.l); lab.htmlFor = id; wrap.append(lab);
     if (f.type === 'list') { wrap.append(listEl(f, s, id)); }
     else {
@@ -1691,7 +1934,7 @@ window.DE_PRESETS = [];</script>
       if (a.pre) box.append(el('span', 'aff', a.pre));
       if (f.type === 'select') {
         input = el('select'); f.options.forEach(function (o) { var op = el('option', null, o[1]); op.value = o[0]; input.append(op); });
-        input.value = s.values[f.id];
+        input.value = String(s.values[f.id]);
       } else {
         input = el('input'); input.id = id;
         if (f.type === 'text') { input.type = 'text'; input.className = 'text'; input.placeholder = f.ph || ''; input.value = s.values[f.id] || ''; }
@@ -1706,15 +1949,67 @@ window.DE_PRESETS = [];</script>
       input.addEventListener(f.type === 'select' ? 'change' : 'input', function () { onField(f, input.value, wrap); });
       box.append(input);
       if (a.post) box.append(el('span', 'aff', a.post));
-      wrap.append(box);
+      if (f.ac === 'place') {
+        var acw = el('div', 'acwrap'); acw.append(box); wrap.append(acw);
+        input.autocomplete = 'off';
+        attachPlaces(input, acw, function (val) { onField(f, val, wrap); });
+      } else wrap.append(box);
     }
-    if (f.h || f.src) {
-      var h = el('div', 'hint');
+    var h = el('div', 'hint');   // always present, so the three rows line up across a row of fields
+    if (!inAssume) {
       if (f.h) h.append(document.createTextNode(f.h + ' '));
       if (f.src && DE.FACTS[f.src]) { h.append(document.createTextNode('Source: ')); h.append(factLink(f.src)); }
-      wrap.append(h);
     }
+    wrap.append(h);
     return wrap;
+  }
+
+  // ------------------------------------------------------------ city autocomplete ("City, State")
+  function placeMatches(q) {
+    q = q.trim().toLowerCase();
+    if (q.length < 2) return [];
+    // city name starts with it, then a later word of the city does (West Des Moines), then the state does (Iowa)
+    var P = DE.PLACES || [], starts = [], words = [], states = [];
+    for (var i = 0; i < P.length; i++) {
+      var l = P[i].toLowerCase(), city = l.slice(0, l.indexOf(','));
+      if (l === q) return [];
+      if (city.indexOf(q) === 0) starts.push(P[i]);
+      else if ((' ' + city).indexOf(' ' + q) >= 0) words.push(P[i]);
+      else if (l.indexOf(', ' + q) >= 0) states.push(P[i]);
+    }
+    return starts.concat(words, states).slice(0, 8);
+  }
+  function attachPlaces(input, holder, onPick) {
+    var list = el('ul', 'aclist'); list.hidden = true; list.id = input.id + '-list'; list.setAttribute('role', 'listbox');
+    input.setAttribute('role', 'combobox'); input.setAttribute('aria-autocomplete', 'list');
+    input.setAttribute('aria-controls', list.id); input.setAttribute('aria-expanded', 'false');
+    var items = [], active = -1;
+    function close() { list.hidden = true; input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); active = -1; }
+    function draw() {
+      list.replaceChildren();
+      if (!items.length) { close(); return; }
+      items.forEach(function (sx, i) {
+        var li = el('li'), cut = sx.indexOf(', ');
+        li.id = list.id + '-' + i; li.setAttribute('role', 'option'); li.setAttribute('aria-selected', String(i === active));
+        li.append(el('span', null, sx.slice(0, cut)), el('small', null, sx.slice(cut)));
+        li.addEventListener('mousedown', function (e) { e.preventDefault(); pick(i); });
+        list.append(li);
+      });
+      list.hidden = false; input.setAttribute('aria-expanded', 'true');
+      if (active >= 0) { input.setAttribute('aria-activedescendant', list.id + '-' + active); var on = list.children[active]; if (on && on.scrollIntoView) on.scrollIntoView({ block: 'nearest' }); }
+    }
+    function pick(i) { input.value = items[i]; close(); onPick(items[i]); }
+    input.addEventListener('input', function () { items = placeMatches(input.value); active = -1; draw(); });
+    input.addEventListener('focus', function () { items = placeMatches(input.value); draw(); });
+    input.addEventListener('keydown', function (e) {
+      if (list.hidden || !items.length) return;
+      if (e.key === 'ArrowDown') { e.preventDefault(); active = (active + 1) % items.length; draw(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); active = (active - 1 + items.length) % items.length; draw(); }
+      else if (e.key === 'Enter' || e.key === 'Tab') { if (active >= 0 || items.length === 1) { if (e.key === 'Enter') e.preventDefault(); pick(active >= 0 ? active : 0); } }
+      else if (e.key === 'Escape') { e.stopPropagation(); close(); }
+    });
+    input.addEventListener('blur', function () { setTimeout(close, 150); });
+    holder.append(list);
   }
   function listEl(f, s, id) {
     var box = el('div', 'listrows');
@@ -1742,36 +2037,45 @@ window.DE_PRESETS = [];</script>
   }
   function onField(f, raw, wrap) {
     var s = slot(S.cat), cat = DE.BY_ID[S.cat];
-    var val = (f.type === 'select' || f.type === 'text') ? raw : (raw === '' ? '' : parseFloat(raw));
+    var val = f.type === 'select' ? (f.num ? parseFloat(raw) : raw) : f.type === 'text' ? raw : (raw === '' ? '' : parseFloat(raw));
     s.values[f.id] = val; s.touched[f.id] = true;
     wrap.classList.toggle('changed', !isDefault(f, val));
     if (cat.linked) {
       var upd = cat.linked(f.id, s.values, s.touched);
       if (upd) Object.keys(upd).forEach(function (k) {
         s.values[k] = upd[k];
-        var inp = document.getElementById('f-' + S.cat + '-' + k); if (inp) inp.value = upd[k];
+        var inp = document.getElementById('f-' + S.cat + '-' + k); if (inp) inp.value = String(upd[k]);
       });
     }
+    if (f.adv && f.sl) {
+      var li = document.querySelector('.assume li[data-id="' + f.id + '"] .say-a');
+      if (li) li.textContent = assumeText(f, val === '' ? f.def : val);
+    }
+    if (f.rerender) { renderForm(); var back = document.getElementById('f-' + S.cat + '-' + f.id); if (back) back.focus(); }
     changed();
   }
   var updT = null;
   function changed() { saveDraft(); clearTimeout(updT); updT = setTimeout(function () { update(false); }, 180); }
 
   // ------------------------------------------------------------ meter
-  function meter(box, score, label) {
+  function meter(box, score, label, ends) {
+    ends = ends || (S.result && S.result.ends) || ['For', 'Against'];
     box.replaceChildren();
     var tr = el('div', 'track'); tr.append(el('div', 'mid'));
     var k = el('div', 'knob'); k.style.left = (50 - score / 2) + '%'; tr.append(k);
     tr.setAttribute('role', 'img');
     tr.setAttribute('aria-label', 'Balance: ' + (score > 0 ? 'leans for by ' + score : score < 0 ? 'leans against by ' + (-score) : 'even') + ' on a scale of 100');
-    var ends = el('div', 'ends'); ends.append(el('span', 'f', 'For'), el('span', 'a', 'Against'));
-    var rd = el('div', 'read'); rd.innerHTML = label || leanText(score);
-    box.append(ends, tr, rd);
+    var en = el('div', 'ends'); en.append(el('span', 'f', ends[0]), el('span', 'a', ends[1]));
+    var rd = el('div', 'read');
+    if (label) rd.textContent = label; else leanText(rd, score, ends);
+    box.append(en, tr, rd);
     return k;
   }
-  function leanText(score) {
-    if (score === 0) return '<b>Even</b>';
-    return 'Leans <b>' + (score > 0 ? 'for' : 'against') + '</b> by ' + Math.abs(score) + ' of 100';
+  function leanText(node, score, ends) {
+    node.replaceChildren();
+    if (score === 0) { node.append(el('b', null, 'Even')); return; }
+    var named = ends[0] !== 'For';
+    node.append(document.createTextNode('Leans ' + (named ? 'toward ' : '')), el('b', null, score > 0 ? (named ? ends[0] : 'for') : (named ? ends[1] : 'against')), document.createTextNode(' by ' + Math.abs(score) + ' of 100'));
   }
 
   // ------------------------------------------------------------ results
@@ -1788,8 +2092,8 @@ window.DE_PRESETS = [];</script>
     renderChart(r);
     renderRuling(r);
     meter($('heroMeter'), r.score);
-    var hc = $('heroCall'); hc.replaceChildren(document.createTextNode('For "' + r.question + '" the call is '));
-    hc.append(el('b', null, r.verdictText.word.toLowerCase())); hc.append(document.createTextNode('.'));
+    var hc = $('heroCall'); hc.replaceChildren(document.createTextNode('"' + r.question + '" The call: '));
+    hc.append(el('b', null, r.verdictText.word)); hc.append(document.createTextNode('.'));
     if (!animate) meter($('meter'), r.score);
     markLiveStale();
   }
@@ -1797,11 +2101,14 @@ window.DE_PRESETS = [];</script>
   function sayEl(p, side) {
     if (!p) {
       var n = el('div', 'say none');
-      n.textContent = side === 'for' ? 'The Advocate has no strong point on this topic.' : 'The Skeptic has no strong answer on this topic.';
+      var en = S.result && S.result.ends;
+      n.textContent = en ? 'Nothing here favours ' + (side === 'for' ? en[0] : en[1]) + '.' : side === 'for' ? 'The Advocate has no strong point on this topic.' : 'The Skeptic has no strong answer on this topic.';
       return n;
     }
     var b = el('div', 'say ' + side);
-    b.append(el('div', 'spk', side === 'for' ? 'Agent 1 - Advocate' : 'Agent 2 - Skeptic'), el('div', 'ttl', p.title), el('div', 'txt', p.text));
+    var ends = S.result && S.result.ends;
+    var who = side === 'for' ? (ends ? 'Agent 1 - for ' + ends[0] : 'Agent 1 - Advocate') : (ends ? 'Agent 2 - for ' + ends[1] : 'Agent 2 - Skeptic');
+    b.append(el('div', 'spk', who), el('div', 'ttl', p.title), el('div', 'txt', p.text));
     var ft = el('div', 'foot'); ft.append(dots(p.w));
     if (p.fact && DE.FACTS[p.fact]) { var l = factLink(p.fact); if (l.tagName === 'A') l.className = 'src'; ft.append(l); }
     b.append(ft);
@@ -1813,7 +2120,8 @@ window.DE_PRESETS = [];</script>
     r.rounds.forEach(function (rd, i) {
       var c = el('div', 'round');
       var h = el('div', 'round-head'); var lb = el('div', 'lbl'); lb.append(el('span', null, 'Round ' + (i + 1)), document.createTextNode(rd.label));
-      var won = el('span', 'won ' + rd.winner, rd.winner === 'for' ? 'Point to the Advocate' : rd.winner === 'against' ? 'Point to the Skeptic' : 'Even');
+      var en2 = r.ends;
+      var won = el('span', 'won ' + rd.winner, rd.winner === 'for' ? 'Point to ' + (en2 ? en2[0] : 'the Advocate') : rd.winner === 'against' ? 'Point to ' + (en2 ? en2[1] : 'the Skeptic') : 'Even');
       h.append(lb, won);
       var pair = el('div', 'pair'); pair.append(sayEl(rd.pro, 'for'), sayEl(rd.con, 'against'));
       c.append(h, pair); box.append(c);
@@ -1841,8 +2149,8 @@ window.DE_PRESETS = [];</script>
   function renderMore(r) {
     var mc = $('morecols'); mc.replaceChildren();
     var a = el('div'), b = el('div'); a.style.display = b.style.display = 'grid'; a.style.gap = b.style.gap = '8px';
-    a.append(el('div', 'eyebrow', 'More from the Advocate (' + r.morePros.length + ')'));
-    b.append(el('div', 'eyebrow', 'More from the Skeptic (' + r.moreCons.length + ')'));
+    a.append(el('div', 'eyebrow', (r.ends ? 'More for ' + r.ends[0] : 'More from the Advocate') + ' (' + r.morePros.length + ')'));
+    b.append(el('div', 'eyebrow', (r.ends ? 'More for ' + r.ends[1] : 'More from the Skeptic') + ' (' + r.moreCons.length + ')'));
     r.morePros.forEach(function (p) { a.append(sayEl(p, 'for')); });
     r.moreCons.forEach(function (p) { b.append(sayEl(p, 'against')); });
     if (!r.morePros.length) a.append(el('p', 'muted', 'Nothing more.'));
@@ -1852,6 +2160,16 @@ window.DE_PRESETS = [];</script>
   }
   function renderNumbers(r) {
     var box = $('nums'); box.replaceChildren();
+    if (r.numbers && r.numbers.cols) {
+      var tb = el('table', 'kv2'), th = el('thead'), hr = el('tr');
+      hr.append(el('th', null, ''), el('th', null, r.numbers.cols[0]), el('th', null, r.numbers.cols[1])); th.append(hr); tb.append(th);
+      var body = el('tbody');
+      r.numbers.rows.forEach(function (n) {
+        var tr = el('tr'); tr.append(el('td', null, n.l), el('td', n.ta || '', n.a), el('td', n.tb || '', n.b)); body.append(tr);
+      });
+      tb.append(body); box.append(tb);
+      return;
+    }
     r.numbers.forEach(function (n) {
       var row = el('div', 'row'), k = el('div', 'k', n.l);
       if (n.n) k.append(el('small', null, n.n));
@@ -1938,7 +2256,7 @@ window.DE_PRESETS = [];</script>
     var cb = el('div'); cb.innerHTML = '<b>Confidence ' + r.confidence + '%</b>';
     var bar = el('div', 'bar'), bi = el('i'); bi.style.width = r.confidence + '%'; bar.append(bi);
     var note = el('small', null, 'How far apart the two cases are, less a little for every box still holding an example value' + (r.kept ? ' (' + r.kept + ' now).' : '.'));
-    var mm = el('div', 'meter'); meter(mm, r.score);
+    var mm = el('div', 'meter'); meter(mm, r.score, null, r.ends);
     right.append(cb, bar, note, mm);
     top.append(left, right); box.append(top);
 
@@ -1998,6 +2316,7 @@ window.DE_PRESETS = [];</script>
     sh.append(hd);
     if (!list.length) { sh.append(el('p', 'muted', 'Nothing saved yet. Run a decision, then press "Save to My decisions". Saved decisions stay in this browser only.')); return; }
     list.forEach(function (it, idx) {
+      if (!DE.BY_ID[it.cat]) return;
       var row = el('div', 'item'), t = el('div'); t.append(el('b', null, it.q)); t.append(el('small', null, it.word + ' - ' + it.date));
       var btns = el('div'); btns.style.display = 'flex'; btns.style.gap = '6px';
       var open = el('button', 'chip', 'Open'); open.type = 'button';
@@ -2019,7 +2338,7 @@ window.DE_PRESETS = [];</script>
 
   // ------------------------------------------------------------ live AI debate
   function fmtVal(f, val) {
-    if (f.type === 'select') { var o = f.options.filter(function (x) { return x[0] === val; })[0]; return o ? o[1] : val; }
+    if (f.type === 'select') { var o = f.options.filter(function (x) { return x[0] === String(val); })[0]; return o ? o[1] : val; }
     if (f.type === 'list') return (val || []).filter(function (r) { return r[0]; }).map(function (r) { return r[0] + ' (' + r[1] + '/5)'; }).join('; ') || 'none';
     if (f.type === 'money') return F.money(val);
     if (f.type === 'money2') return DE.CURRENCIES[S.cur].sym + Number(val).toFixed(2);
@@ -2032,9 +2351,12 @@ window.DE_PRESETS = [];</script>
     var cat = r.cat, L = [];
     L.push('Decision: ' + r.question);
     L.push('Decision type: ' + cat.name);
-    L.push('Currency: ' + (cat.usdOnly ? 'KDP prices in US dollars; other money in ' : '') + DE.CURRENCIES[S.cur].name + '.');
+    L.push('Currency: ' + DE.CURRENCIES[S.cur].name + '.');
     L.push(''); L.push("The person's facts:");
-    DE.fieldsOf(cat).forEach(function (f) { L.push('- ' + f.l + ': ' + fmtVal(f, r.v[f.id])); });
+    cat.groups.forEach(function (g) {
+      if (g.showIf && !g.showIf(r.v)) return;
+      g.f.forEach(function (f) { L.push('- ' + (g.t ? g.t + ', ' : '') + f.l + ': ' + fmtVal(f, r.v[f.id])); });
+    });
     L.push(''); L.push('Calculated by the app:');
     r.numbers.forEach(function (n) { L.push('- ' + n.l + ': ' + n.v + (n.n ? ' (' + n.n + ')' : '')); });
     L.push(''); L.push('Hard checks:');
@@ -2098,6 +2420,9 @@ window.DE_PRESETS = [];</script>
   }
   function renderLive() {
     var box = $('liveBox'); box.replaceChildren();
+    var can = !!S.live.kind;
+    $('live').hidden = !can; $('liveLink').hidden = !can;
+    if (!can) return;
     if (!S.live.checked) { box.append(el('p', 'status', 'Checking whether live AI is available here...')); return; }
     if (!S.live.kind) {
       box.append(el('p', null, 'Live AI agents run when you open The Decision Enabler inside Claude, or in the app once its AI service is switched on. The built-in agents above work everywhere and never send your answers anywhere.'));
@@ -2219,6 +2544,6 @@ window.DE_PRESETS = [];</script>
 </script>
 
 <script>if('serviceWorker' in navigator && location.protocol==='https:'){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
-<!-- build 4e96662da1 -->
+<!-- build 2737e0b278 -->
 </body>
 </html>
