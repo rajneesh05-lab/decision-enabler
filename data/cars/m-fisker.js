@@ -1,0 +1,1 @@
+DE_DATA("m-fisker",{"Karma":{"2012":[["Karma",20,"p",62.1,33,"car"]]},"Ocean":{"2023":[["Ocean Extreme One",92,"e",36.8,360,"suv"]],"2024":[["Ocean Sport 20in",92,"e",36.6,231,"suv"],["Ocean Sport 22in",79,"e",42.7,194,"suv"]]}});

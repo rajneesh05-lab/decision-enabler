@@ -19,6 +19,15 @@ p, li { color: var(--ink); } .muted { color: var(--muted); } a { color: var(--ac
 <h2>What the app and website do with your answers</h2>
 <p>The numbers and notes you type are used on your device to run the three built-in agents. They are kept in your browser's or app's local storage so your work is there next time. You can clear them at any time by clearing the site data or deleting the app.</p>
 
+<h2>Looking things up (only when you pick something)</h2>
+<p>Some answers need a quick lookup. These happen only when you pick a suggestion, and send only what is needed for that lookup. Nothing goes to us.</p>
+<ul>
+<li><b>An address or city</b> (Buy a home, Move): what you type in that box, and later the map point it finds, go to OpenStreetMap services (Photon, run by Komoot, and as backups Nominatim, run by the OpenStreetMap Foundation, or Overpass) to find the place and what is nearby, and to the US FEMA flood map to check the flood zone.</li>
+<li><b>A car</b> (Buy a car): the year, make and model you pick go to the US National Highway Traffic Safety Administration (NHTSA) for crash-test ratings and recalls.</li>
+<li><b>Funds, home prices, cost of living, colleges and car fuel economy</b> come from data files that ship with this website and app, so nothing is sent for those.</li>
+</ul>
+<p>These services receive your IP address like any website you visit; see their own privacy policies. They do not receive your name, income or any other answer.</p>
+
 <h2>Live AI debate (optional)</h2>
 <p>If you choose to run the live AI debate and agree to the prompt that explains it, your answers and notes for that decision are sent to our AI server and from there to Claude, an AI model made by Anthropic, only to write the agents' replies. We do not store them. Anthropic processes them under its own <a href="https://www.anthropic.com/legal/privacy" target="_blank" rel="noopener">privacy policy</a> and API terms. Inside claude.ai, the live debate runs on your own Claude account.</p>
 
@@ -26,11 +35,11 @@ p, li { color: var(--ink); } .muted { color: var(--muted); } a { color: var(--ac
 <ul>
 <li>No accounts, no sign-in.</li>
 <li>No advertising, analytics or tracking, and no data sold or shared with third parties.</li>
-<li>No location, contacts, photos or other device data.</li>
+<li>No device location (GPS), contacts, photos or other device data. A place is only ever the one you type.</li>
 </ul>
 
 <h2>Hosting</h2>
-<p>The website is served by GitHub Pages and loads fonts from Google Fonts. Like any web server, they receive your IP address and browser details to deliver the page; see their privacy policies. The iPhone app works offline and loads nothing from the internet unless you run the live AI debate.</p>
+<p>The website is served by GitHub Pages and loads fonts from Google Fonts. Like any web server, they receive your IP address and browser details to deliver the page; see their privacy policies. The iPhone app works offline. It goes online only for the lookups above, and for the live AI debate if a later version turns it on.</p>
 
 <h2>Children</h2>
 <p>The Decision Enabler is meant for adults making financial and life decisions. It is not directed at children under 13.</p>

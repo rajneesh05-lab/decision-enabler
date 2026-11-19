@@ -1,0 +1,1 @@
+DE_DATA("cPW",{"243647":{"n":"Palau Community College","city":"Koror","st":"PW","ctl":1,"lvl":2,"url":"palau.edu/","size":393,"adm":null,"cost":9511,"tin":3730,"tout":3970,"room":3381,"net":1947,"netb":[1890,1791,2338,null,null],"grad":0.3735,"ret":null,"earn10":32336,"earn1":null,"earn4":null,"debt":null,"pell":0.5242,"lat":7.343177,"lon":134.473744,"p":[]}});

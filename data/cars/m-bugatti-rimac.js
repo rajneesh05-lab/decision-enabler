@@ -1,0 +1,1 @@
+DE_DATA("m-bugatti-rimac",{"Nevera":{"2024":[["Nevera",53,"e",63.3,204,"car"]],"2025":[["Nevera",53,"e",63.3,204,"car"],["Nevera R",51,"e",66.5,174,"car"]],"2026":[["Nevera R",51,"e",66.5,174,"car"]]}});

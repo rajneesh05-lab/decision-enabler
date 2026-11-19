@@ -1,0 +1,1 @@
+DE_DATA("m-pagani",{"Huayra Coupe":{"2014":[["Huayra Coupe",13,"g",0,0,"car"]],"2016":[["Huayra Coupe",13,"g",0,0,"car"]]},"Huayra":{"2018":[["Huayra",13,"g",0,0,"car"]],"2020":[["Huayra Roadster BC",12,"g",0,0,"car"]],"2023":[["Huayra",12,"g",0,0,"car"]]}});

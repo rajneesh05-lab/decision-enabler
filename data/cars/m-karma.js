@@ -1,0 +1,1 @@
+DE_DATA("m-karma",{"Revero":{"2018":[["Revero",20,"p",56.0,37,"car"]],"2019":[["Revero",20,"p",56.0,37,"car"]],"2020":[["Revero GT (21-inch wheels)",26,"p",48.0,61,"car"]]},"GS-6":{"2021":[["GS-6 (21-inch wheels)",26,"p",48.0,61,"car"],["GS-6 (22-inch wheels)",22,"p",54.0,54,"car"]]}});

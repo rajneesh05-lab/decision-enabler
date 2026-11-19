@@ -1,0 +1,1 @@
+DE_DATA("m-ruf-automobile",{"RUF TURBO 12/CTR3":{"2018":[["RUF TURBO 12/CTR3",18,"g",0,0,"car"]]},"RUFTURBO12/CTR3/CTR2017":{"2019":[["RUFTURBO12/CTR3/CTR2017",18,"g",0,0,"car"]]},"TURBO12/CTR3/CTR ANNIVERSARY":{"2020":[["TURBO12/CTR3/CTR ANNIVERSARY",18,"g",0,0,"car"]]},"T12/CTR3/CTR Anniversary":{"2023":[["T12/CTR3/CTR Anniversary",19,"g",0,0,"car"]]}});

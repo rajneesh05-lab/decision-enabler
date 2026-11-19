@@ -1,0 +1,1 @@
+DE_DATA("cFM",{"243638":{"n":"College of Micronesia-FSM","city":"Pohnpei","st":"FM","ctl":1,"lvl":2,"url":"www.comfsm.fm/","size":1729,"adm":0.8707,"cost":10442,"tin":5050,"tout":5050,"room":4263,"net":6844,"netb":[6840,6985,null,null,null],"grad":0.2814,"ret":0.4,"earn10":27928,"earn1":null,"earn4":33981,"debt":null,"pell":0.6807,"lat":6.909759,"lon":158.158189,"p":[]}});
