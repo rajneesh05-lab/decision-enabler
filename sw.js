@@ -1,5 +1,5 @@
 // Service worker: lets the website open offline after the first visit. Network first, so updates show at once.
-var CACHE = 'decision-enabler-823097d741';
+var CACHE = 'decision-enabler-43a4e467b8';
 var CORE = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png'];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(CORE).catch(function () {}); }));

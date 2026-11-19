@@ -348,6 +348,9 @@ details.research > summary { cursor: pointer; font-weight: 700; font-family: var
 .toast { position: fixed; z-index: 60; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-size: 14px; max-width: calc(100% - 32px); }
 .copybox { width: 100%; min-height: 160px; font-family: var(--mono); font-size: 12.5px; border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: var(--surface-2); }
 
+.disclaim { border: 1px solid var(--line); border-left: 4px solid var(--enabler); background: var(--surface); border-radius: var(--radius); padding: 12px 16px; display: grid; gap: 6px; font-size: 14.5px; max-width: 86ch; }
+.disclaim.small { font-size: 13.5px; color: var(--muted); padding: 10px 14px; }
+.disclaim.small b { color: var(--ink); }
 footer.foot { border-top: 1px solid var(--line); padding-top: 20px; display: grid; gap: 8px; font-size: 13.5px; color: var(--muted); max-width: 80ch; }
 
 /* debate reveal (only after pressing Start) */
@@ -492,6 +495,10 @@ fieldset.grp.wide .fgrid { grid-template-columns: minmax(0, 1fr); }
       </div>
       <div class="seat against"><div class="who"><span class="badge against">2</span>The Skeptic</div><p>Builds the strongest honest case against it, or for waiting.</p></div>
     </div>
+    <div class="disclaim" role="note" aria-label="Please read">
+      <p><b>A reference point, not the final word.</b> The Decision Enabler helps you think a decision through with numbers and research. It is not an absolute decision tool and does not decide for you. The call is yours to make, ideally with a licensed professional for money, legal or tax questions.</p>
+      <p><b>We do not store what you enter.</b> There is no account and nothing is sent to us. Your answers stay only in this browser on your own device, so your work is there next time. <button type="button" class="linkbtn" id="eraseBtn">Erase my answers from this device</button></p>
+    </div>
   </section>
 
   <section class="step" id="pick" aria-labelledby="h-pick">
@@ -537,6 +544,7 @@ fieldset.grp.wide .fgrid { grid-template-columns: minmax(0, 1fr); }
   <section class="step" id="call" aria-labelledby="h-call">
     <div class="step-head"><span class="step-n">5</span><h2 id="h-call">The Enabler's call</h2></div>
     <div class="ruling" id="ruling" aria-live="polite"></div>
+    <p class="disclaim small" role="note"><b>This call is a reference point, not an absolute answer.</b> It weighs only the facts you gave and the research shown. Life is bigger than any model: you make the decision.</p>
     <div class="actions">
       <button type="button" class="secondary" id="copyBtn">Copy the summary</button>
       <button type="button" class="secondary" id="saveBtn">Save to My decisions</button>
@@ -551,9 +559,9 @@ fieldset.grp.wide .fgrid { grid-template-columns: minmax(0, 1fr); }
   </section>
 
   <footer class="foot">
-    <p><b>Education only.</b> The Decision Enabler is not financial, legal, tax or medical advice. Rules, rates and prices change and differ by place; check with a licensed professional before you act.</p>
+    <p><b>A reference point only.</b> The Decision Enabler is not an absolute decision tool, and it is not financial, legal, tax or medical advice. Rules, rates and prices change and differ by place; check with a licensed professional before you act.</p>
     <p id="factsDate"></p>
-    <p>Privacy: your answers stay on this device and the built-in agents run entirely in your browser. When you pick an address, a city or a car, only that pick is sent to the public service that looks it up (OpenStreetMap, FEMA or NHTSA). Nothing is sent to us, and nothing else is sent unless you press the live AI button and agree.</p>
+    <p>Privacy: we do not store anything you enter, and there is no account. Your answers stay only in this browser on your device (erase them any time with the button at the top), and the built-in agents run entirely in your browser. When you pick an address, a city or a car, only that pick is sent to the public service that looks it up (OpenStreetMap, FEMA or NHTSA). Nothing is sent to us, and nothing else is sent unless you press the live AI button and agree.</p>
   </footer>
 </div>
 
@@ -2409,7 +2417,7 @@ fieldset.grp.wide .fgrid { grid-template-columns: minmax(0, 1fr); }
     r.checks.forEach(function (c) { L.push('- [' + c.status.toUpperCase() + '] ' + c.label + ': ' + c.note); });
     if (r.flips.length) { L.push(''); L.push('What would change the answer:'); r.flips.forEach(function (f) { L.push('- ' + f); }); }
     L.push(''); L.push('Next steps:'); r.steps.forEach(function (s) { L.push('- ' + s); });
-    L.push(''); L.push('Made with The Decision Enabler. Facts checked ' + (root.DE && root.DE.FACTS_CHECKED || '') + '. Education only, not financial, legal or tax advice.');
+    L.push(''); L.push('Made with The Decision Enabler. Facts checked ' + (root.DE && root.DE.FACTS_CHECKED || '') + '. A reference point to help you think, not an absolute decision: you make the call. Education only, not financial, legal or tax advice.');
     return L.join('\n');
   }
 
@@ -3823,6 +3831,22 @@ window.DE_PRESETS = [];</script>
     $('notes').addEventListener('input', function () { slot(S.cat).notes = $('notes').value; saveDraft(); });
     $('startBtn').addEventListener('click', function () { update(true); $('debate').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }); });
     $('resetBtn').addEventListener('click', function () { var s = slot(S.cat); s.values = DE.defaults(DE.BY_ID[S.cat]); s.touched = {}; saveDraft(); renderForm(); update(false); toast('Example values restored'); });
+    // erase everything this page kept in this browser (drafts and saved decisions); asks twice
+    var eraseArm = null;
+    $('eraseBtn').addEventListener('click', function () {
+      var b = $('eraseBtn');
+      if (!eraseArm) {
+        b.textContent = 'Tap again to erase all answers and saved decisions';
+        eraseArm = setTimeout(function () { eraseArm = null; b.textContent = 'Erase my answers from this device'; }, 6000);
+        return;
+      }
+      clearTimeout(eraseArm); eraseArm = null; b.textContent = 'Erase my answers from this device';
+      try { Object.keys(window.localStorage).forEach(function (k) { if (k.indexOf('de-') === 0) window.localStorage.removeItem(k); }); } catch (e) { /* storage off */ }
+      clearTimeout(saveDraftT);
+      S.all = {}; S.carUI = {}; slot(S.cat);
+      renderForm(); update(false); renderSavedCount(); closeSheet(); resetLive();
+      toast('Erased. Nothing from you is left on this device.');
+    });
     $('copyBtn').addEventListener('click', copySummary);
     if (typeof navigator.share === 'function' && CFG.build !== 'artifact') {
       var sh = el('button', 'secondary', 'Share'); sh.type = 'button';
@@ -3848,6 +3872,6 @@ window.DE_PRESETS = [];</script>
 </script>
 
 <script>if('serviceWorker' in navigator && location.protocol==='https:'){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
-<!-- build 823097d741 -->
+<!-- build 43a4e467b8 -->
 </body>
 </html>
